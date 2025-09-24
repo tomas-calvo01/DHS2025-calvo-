@@ -1,7 +1,7 @@
 import sys
 from antlr4 import *
 from compiladorLexer import compiladorLexer
-# from compiladorParser import compiladorParse
+from compiladorParser import compiladorParse
 
 
 def main(argv):
