@@ -11,28 +11,24 @@ CA : '[' ;
 CC : ']' ;
 PYC : ';' ;
 COMA : ',' ;
-
-//Operadores Aritmeticos
-
 ASIG : '=' ;
 SUMA : '+' ;
 RESTA : '-' ;
 MULT : '*' ;
 DIV : '/' ;
 MOD : '%' ;
-
-// Operadores LOGICOS
 MENOR : '<' ;
 MAYOR : '>' ;
 MENOREQ : '<=' ;
 MAYOREQ : '>=' ;
 EQUAL : '==' ;
 NEQUAL : '!=' ;
-
+AND : '&&' ;
+OR : '||' ;
+NOT : '!' ;
 
 NUMERO : DIGITO+ ;
 
-// Palabras reservadas
 INT : 'int' ;
 DOUBLE : 'double' ;
 IF : 'if' ;
@@ -43,7 +39,6 @@ RETURN : 'return' ;
 
 ID : (LETRA | '_')(LETRA | DIGITO | '_')* ;
 
-// Ignorar espacios en blanco
 WS : [ \n\r\t] -> skip ;
 OTRO : . ;
 
@@ -123,7 +118,9 @@ t : MULT factor t
   |
   ;
 
-funcion : tipo ID PA parametros PC bloque ;
+funcion : tipo ID PA parametros PC bloque 
+         | tipo ID PA parametros PC PYC
+         ;
 
 parametros : ID lista_param
           ;
@@ -135,6 +132,7 @@ lista_param : COMA ID lista_param
 factor : PA exp PC
        | NUMERO
        | ID
+       | call
        ;
 
 l : EQUAL factor
@@ -143,7 +141,14 @@ l : EQUAL factor
   | MENOREQ factor
   | MAYOR factor
   | MAYOREQ factor
+  | AND factor
+  | OR factor
+  | NOT factor
   ;
+
+call : ID PA argumentos PC ;
+argumentos : opal (COMA opal)* | ;
+callstmt : call PYC ;
 
 returnstmt
      : RETURN opal PYC

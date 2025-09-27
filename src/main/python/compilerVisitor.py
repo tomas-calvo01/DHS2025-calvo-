@@ -134,6 +134,21 @@ class compilerVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by compilerParser#call.
+    def visitCall(self, ctx:compilerParser.CallContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by compilerParser#argumentos.
+    def visitArgumentos(self, ctx:compilerParser.ArgumentosContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by compilerParser#callstmt.
+    def visitCallstmt(self, ctx:compilerParser.CallstmtContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by compilerParser#returnstmt.
     def visitReturnstmt(self, ctx:compilerParser.ReturnstmtContext):
         return self.visitChildren(ctx)

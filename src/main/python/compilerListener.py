@@ -233,6 +233,33 @@ class compilerListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by compilerParser#call.
+    def enterCall(self, ctx:compilerParser.CallContext):
+        pass
+
+    # Exit a parse tree produced by compilerParser#call.
+    def exitCall(self, ctx:compilerParser.CallContext):
+        pass
+
+
+    # Enter a parse tree produced by compilerParser#argumentos.
+    def enterArgumentos(self, ctx:compilerParser.ArgumentosContext):
+        pass
+
+    # Exit a parse tree produced by compilerParser#argumentos.
+    def exitArgumentos(self, ctx:compilerParser.ArgumentosContext):
+        pass
+
+
+    # Enter a parse tree produced by compilerParser#callstmt.
+    def enterCallstmt(self, ctx:compilerParser.CallstmtContext):
+        pass
+
+    # Exit a parse tree produced by compilerParser#callstmt.
+    def exitCallstmt(self, ctx:compilerParser.CallstmtContext):
+        pass
+
+
     # Enter a parse tree produced by compilerParser#returnstmt.
     def enterReturnstmt(self, ctx:compilerParser.ReturnstmtContext):
         pass
