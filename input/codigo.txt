@@ -1,0 +1,28 @@
+ def exitPrototipo_funcion(self, ctx:compilerParser.Prototipo_funcionContext):
+        tipo = ctx.tipo().getText() if ctx.tipo() else "void"
+        nombre = ctx.ID().getText()
+        if self.ts.buscarSimboloContexto(nombre):
+            print(f"Error: función '{nombre}' ya declarada en este contexto.")
+        else:
+            fun = Funcion(nombre, tipo, [])
+            self.ts.addSimbolo(fun)
+            print(f"Prototipo de función '{nombre}' tipo {tipo} declarado.")
+
+    def exitDeclaracion_funcion(self, ctx:compilerParser.Declaracion_funcionContext):
+        tipo = ctx.tipo().getText()
+        nombre = ctx.ID().getText()
+        if self.ts.buscarSimboloContexto(nombre):
+            print(f"Error: función '{nombre}' ya declarada en este contexto.")
+        else:
+            fun = Funcion(nombre, tipo, [])
+            self.ts.addSimbolo(fun)
+            print(f"Función '{nombre}' tipo {tipo} declarada.")
+
+    def exitLlamada_funcion(self, ctx:compilerParser.Llamada_funcionContext):
+        nombre = ctx.ID().getText()
+        simbolo = self.ts.buscarSimbolo(nombre)
+        if simbolo and isinstance(simbolo, Funcion):
+            simbolo.setUsado()
+            print(f"Llamada a función '{nombre}' registrada como usada.")
+        else:
+            print(f"Error: función '{nombre}' no definida.")

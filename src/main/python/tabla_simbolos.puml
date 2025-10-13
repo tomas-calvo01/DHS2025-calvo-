@@ -31,8 +31,9 @@ class ID <<abstract>> {
     + getUsado()
 }
 
-class Variable {
-
+class Variable(ID) {
+    def __init__(self, nombre, tipoDato):
+    super().__init__(nombre, tipoDato)
 }
 
 class Funcion {
