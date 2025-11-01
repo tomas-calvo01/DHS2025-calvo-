@@ -188,33 +188,6 @@ class compilerListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by compilerParser#funcion.
-    def enterFuncion(self, ctx:compilerParser.FuncionContext):
-        pass
-
-    # Exit a parse tree produced by compilerParser#funcion.
-    def exitFuncion(self, ctx:compilerParser.FuncionContext):
-        pass
-
-
-    # Enter a parse tree produced by compilerParser#parametros.
-    def enterParametros(self, ctx:compilerParser.ParametrosContext):
-        pass
-
-    # Exit a parse tree produced by compilerParser#parametros.
-    def exitParametros(self, ctx:compilerParser.ParametrosContext):
-        pass
-
-
-    # Enter a parse tree produced by compilerParser#lista_param.
-    def enterLista_param(self, ctx:compilerParser.Lista_paramContext):
-        pass
-
-    # Exit a parse tree produced by compilerParser#lista_param.
-    def exitLista_param(self, ctx:compilerParser.Lista_paramContext):
-        pass
-
-
     # Enter a parse tree produced by compilerParser#factor.
     def enterFactor(self, ctx:compilerParser.FactorContext):
         pass
@@ -251,12 +224,21 @@ class compilerListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by compilerParser#callstmt.
-    def enterCallstmt(self, ctx:compilerParser.CallstmtContext):
+    # Enter a parse tree produced by compilerParser#funcion.
+    def enterFuncion(self, ctx:compilerParser.FuncionContext):
         pass
 
-    # Exit a parse tree produced by compilerParser#callstmt.
-    def exitCallstmt(self, ctx:compilerParser.CallstmtContext):
+    # Exit a parse tree produced by compilerParser#funcion.
+    def exitFuncion(self, ctx:compilerParser.FuncionContext):
+        pass
+
+
+    # Enter a parse tree produced by compilerParser#parametros.
+    def enterParametros(self, ctx:compilerParser.ParametrosContext):
+        pass
+
+    # Exit a parse tree produced by compilerParser#parametros.
+    def exitParametros(self, ctx:compilerParser.ParametrosContext):
         pass
 
 
@@ -266,6 +248,15 @@ class compilerListener(ParseTreeListener):
 
     # Exit a parse tree produced by compilerParser#returnstmt.
     def exitReturnstmt(self, ctx:compilerParser.ReturnstmtContext):
+        pass
+
+
+    # Enter a parse tree produced by compilerParser#llamada.
+    def enterLlamada(self, ctx:compilerParser.LlamadaContext):
+        pass
+
+    # Exit a parse tree produced by compilerParser#llamada.
+    def exitLlamada(self, ctx:compilerParser.LlamadaContext):
         pass
 
 

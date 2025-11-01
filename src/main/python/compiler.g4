@@ -1,7 +1,7 @@
 grammar compiler;
 
 fragment LETRA : [A-Za-z] ;
-fragment DIGITO : [0-9] ;
+fragment DIGITO : [0-9] + ('.' [0-9]+)?  ;
 
 PA : '(' ;
 PC : ')' ;
@@ -29,8 +29,10 @@ NOT : '!' ;
 
 NUMERO : DIGITO+ ;
 
+VOID : 'void';
 INT : 'int' ;
 DOUBLE : 'double' ;
+FLOAT : 'float';
 IF : 'if' ;
 ELSE : 'else' ;
 FOR : 'for' ;
@@ -54,9 +56,10 @@ instruccion : asignacion
             | iif
             | iwhile
             | bloque
-            | returnstmt
             | ifor
             | funcion
+            |returnstmt
+            |llamada
             ;
 
 bloque : LLA instrucciones LLC ;
@@ -90,10 +93,12 @@ inic : ASIG opal
 
 tipo : INT
      | DOUBLE
+     | FLOAT
      ;
 
 asignacion : ID ASIG opal PYC
           | ID (INCREMENTO | DECREMENTO) PYC
+          
           ;
 INCREMENTO : '++' ;
 DECREMENTO : '--' ;
@@ -118,21 +123,11 @@ t : MULT factor t
   |
   ;
 
-funcion : tipo ID PA parametros PC bloque 
-         | tipo ID PA parametros PC PYC
-         ;
 
-parametros : ID lista_param
-          ;
-
-lista_param : COMA ID lista_param
-            |
-            ;
-
-factor : PA exp PC
-       | NUMERO
+factor :  NUMERO
        | ID
        | call
+       |PA exp PC
        ;
 
 l : EQUAL factor
@@ -147,9 +142,24 @@ l : EQUAL factor
   ;
 
 call : ID PA argumentos PC ;
-argumentos : opal (COMA opal)* | ;
-callstmt : call PYC ;
+
+argumentos : exp (COMA exp)* 
+                 | 
+                 ;
+funcion : (tipo | VOID)ID PA parametros PC bloque 
+         | (tipo | VOID) ID PA parametros PC PYC
+         ;
+
+parametros : tipo ID (COMA tipo ID)* |
+                 ;
+
+
 
 returnstmt
      : RETURN opal PYC
      ;
+ 
+llamada
+    : call PYC
+    ;
+    

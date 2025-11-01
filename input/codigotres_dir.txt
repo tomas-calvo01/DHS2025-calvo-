@@ -1,0 +1,108 @@
+codigotres_dir
+
+Operacion Basica
+
+    x= y op z
+
+x=y
+x=cte  
+jmp L
+if  x jump L
+if not x jump L
+push x
+pop x
+
+funciones auxiliares:
+a) generador de nombres de variables temporales
+b) enerador de nombres de etiquetas 
+--------------------------------
+
+ejemplo 1
+x = y + 2 * z - 2;
+
+t0 = 2 * z
+t1 = y + t0
+t2 = t1 - 2
+x = t2
+
+
+ejemplo 2
+x = (y + 2) * ( z - 2);
+
+t0 = y + 2
+t1 = z - 2
+t2 = t0 *t1
+x = t2
+
+ejemplo 3
+int ((x>10) && (y<5) || (z==0)) <.....>
+
+t0 = x>10
+t1 = y<5
+t2 = t0 && t1
+t3 = z==0
+t4 = t2 || t3
+if t4 <.....>
+
+-------------
+ejemplo 4
+if (x<0)
+    z=y*x
+else 
+    z=y/x
+
+t0=x<0
+if t0 jump L0
+t1 = z=y/x
+z=t1
+jmp L1
+label L0
+t2= y*x
+z=t2
+label L1
+
+
+-------------
+ejemplo 5
+x=0
+while(x<10)
+    x=x+1
+
+x=0
+label L0
+t0= x<10
+if not t0 jump L1
+t1=x+1
+x=t1
+jump L0
+label L1
+
+--------------
+ejemplo 6(llamado a funcio)
+
+x=f(y,z)
+
+push y
+push z
+push L0
+jump f
+label L0(donde vuelve la funcion, cuando temina de ejecutar vuelve a label L0)
+pop x
+
+------------------------
+int f(int y, int z){
+    return y + z;
+}
+
+label f 
+pop t0
+pop z
+pop y
+t1= y+z
+push t1
+jmp t0
+
+
+
+
+

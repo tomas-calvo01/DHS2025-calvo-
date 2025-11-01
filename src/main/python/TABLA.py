@@ -47,6 +47,10 @@ class Contexto:
 
     def buscarSimbolo(self, nombre):
         return self.simbolos.get(nombre, None)
+    def __str__(self):
+        if not self.simbolos:
+            return "  (vacío)\n"
+        return "".join([f"  {nombre}: {sim.tipoDato}\n" for nombre, sim in self.simbolos.items()])
 
 
 class TS:
@@ -82,3 +86,9 @@ class TS:
     def buscarSimboloContexto(self, nombre):
         
         return self.contextos[-1].buscarSimbolo(nombre)
+    def __str__(self):
+        resultado = "\nTabla de Simbolos:\n"
+        for i, contexto in enumerate(self.contextos):
+            resultado += f"--- Contexto {i} ---\n"
+            resultado += str(contexto)
+        return resultado

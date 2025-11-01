@@ -3,7 +3,8 @@ from antlr4 import *
 from compilerLexer import compilerLexer
 from compilerParser import compilerParser
 from Escucha import Escucha
-
+from compilerVisitor import compilerVisitor
+from caminante import caminante
 def main(argv):
     archivo = "input/programa.txt"
     if len(argv) > 1 :
@@ -15,7 +16,9 @@ def main(argv):
     esc =Escucha()
     parser.addParseListener(esc)
     tree = parser.programa()
-    print(esc)
+    #visitante=caminante()
+    #visitante.visitPrograma(tree)
+    #print(esc)
     #print(tree.toStringTree(recog=parser))
 
 if __name__ == '__main__':

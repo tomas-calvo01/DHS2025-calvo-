@@ -109,21 +109,6 @@ class compilerVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by compilerParser#funcion.
-    def visitFuncion(self, ctx:compilerParser.FuncionContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by compilerParser#parametros.
-    def visitParametros(self, ctx:compilerParser.ParametrosContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by compilerParser#lista_param.
-    def visitLista_param(self, ctx:compilerParser.Lista_paramContext):
-        return self.visitChildren(ctx)
-
-
     # Visit a parse tree produced by compilerParser#factor.
     def visitFactor(self, ctx:compilerParser.FactorContext):
         return self.visitChildren(ctx)
@@ -144,13 +129,23 @@ class compilerVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by compilerParser#callstmt.
-    def visitCallstmt(self, ctx:compilerParser.CallstmtContext):
+    # Visit a parse tree produced by compilerParser#funcion.
+    def visitFuncion(self, ctx:compilerParser.FuncionContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by compilerParser#parametros.
+    def visitParametros(self, ctx:compilerParser.ParametrosContext):
         return self.visitChildren(ctx)
 
 
     # Visit a parse tree produced by compilerParser#returnstmt.
     def visitReturnstmt(self, ctx:compilerParser.ReturnstmtContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by compilerParser#llamada.
+    def visitLlamada(self, ctx:compilerParser.LlamadaContext):
         return self.visitChildren(ctx)
 
 

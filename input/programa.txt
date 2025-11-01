@@ -1,39 +1,5 @@
-int w;
-int a, b , c, d, e;
-int x = 0, y, z = x;
-
-if (a) {
-    x = a;
-}
-
-
-double xyz;
-int x;
-
-x = 0;
-temp = xyz;
-a = 10;
-
-for(int r = 0; i < 10; r++){
-    x = x + 1;
-}
-
-if( x != 0) {
-    y = x;
-}
-
-int sum (x,y,z){
-    sum = x + y + z;
-    return sum;
-}
-while (a) {
-    x = a;
-    y = 10;
-}
-
-while(x)
-    x = x;
-
-for(int z; i<12; z++){
-    x=x+1;
-}
+float p=3;
+int x = 0;
+int y=5;
+y=6.8;
+int sum= p+x+y;
