@@ -1,5 +1,4 @@
 float p=3;
 int x = 0;
-int y=5;
-y=6.8;
+int y=(6+4);
 int sum= p+x+y;

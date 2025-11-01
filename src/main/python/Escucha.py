@@ -1,5 +1,6 @@
 from antlr4 import TerminalNode
 from antlr4 import ErrorNode
+from antlr4.error.ErrorListener import ErrorListener
 from compilerParser import compilerParser
 from compilerListener import compilerListener
 from TABLA import Variable, TS, Funcion
@@ -14,6 +15,10 @@ class Escucha(compilerListener):
         self.numNodos = 0
         self.hay_error_semantico = False  
         self.hay_error_sintactico = False  
+    
+    def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
+        print(f"[ERROR SINTÁCTICO] {msg} en línea {line}, columna {column}")
+        self.hay_error_sintactico = True
 
     def enterPrograma(self, ctx: compilerParser.ProgramaContext):
         print("---Nuevo contexto---")
@@ -152,15 +157,3 @@ class Escucha(compilerListener):
             simbolo.setUsado()
             print(f"[INFO] Llamada correcta a función '{nombre}'.")
 
-    def visitErrorNode(self, node: ErrorNode):
-        token = node.getSymbol()
-        linea = token.line
-        columna = token.column
-        text = node.getText()
-        if text == ';':
-            print(f"[ERROR SINTÁCTICO] Falta de punto y coma en línea {linea}, columna {columna}")
-        else: 
-            if text == '(':
-                print(f"[ERROR SINTÁCTICO] Falta de apertura de paréntesis en línea {linea}, columna {columna}")
-           
-        self.hay_error_sintactico = True

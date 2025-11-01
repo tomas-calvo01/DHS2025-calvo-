@@ -14,6 +14,8 @@ def main(argv):
     stream = CommonTokenStream(lexer)
     parser = compilerParser(stream)
     esc =Escucha()
+    parser.removeErrorListeners()  
+    parser.addErrorListener(esc) 
     parser.addParseListener(esc)
     tree = parser.programa()
     #visitante=caminante()
