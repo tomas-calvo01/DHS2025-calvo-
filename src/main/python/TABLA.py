@@ -76,7 +76,6 @@ class TS:
         self.contextos[-1].addSimbolo(id)
 
     def buscarSimbolo(self, nombre):
-        
         for contexto in reversed(self.contextos):
             simbolo = contexto.buscarSimbolo(nombre)
             if simbolo:

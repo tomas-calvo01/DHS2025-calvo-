@@ -27,23 +27,29 @@ class Escucha(compilerListener):
         ts = TS.getInstance()
         print("---Contexto finalizado---")
 
-       
         if self.hay_error_sintactico:
             print("\n[ERROR] Se detectaron errores sintácticos. No se mostrará la tabla de símbolos.\n")
             return
-
+        
         if self.hay_error_semantico:
             print("\n[ERROR] Se detectaron errores semánticos. No se mostrará la tabla de símbolos.\n")
             return
 
-   
-        print(ts)
+        hay_variables_no_usadas = False
         for i, contexto in enumerate(ts.contextos):
             for nombre, simbolo in contexto.simbolos.items():
                 if isinstance(simbolo, Variable) and not simbolo.getUsado():
-                    print(f"[ADVERTENCIA] Variable '{nombre}' declarada pero no usada (Contexto {i}).")
+                    print(f"[ERROR SEMÁNTICO] Variable '{nombre}' declarada pero no usada (Contexto {i}).")
+                    hay_variables_no_usadas = True
                 if isinstance(simbolo, Funcion) and not simbolo.getUsado():
-                    print(f"[ADVERTENCIA] Función '{nombre}' declarada pero no usada (Contexto {i}).")
+                    print(f"[ERROR SEMÁNTICO] Función '{nombre}' declarada pero no usada (Contexto {i}).")
+                    hay_variables_no_usadas = True
+
+        if hay_variables_no_usadas:
+            print("\n[ERROR] Se detectaron errores semánticos. No se mostrará la tabla de símbolos.\n")
+            return
+
+        print(ts)
 
   
     def exitDeclaracion(self, ctx: compilerParser.DeclaracionContext):

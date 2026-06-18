@@ -1,4 +1,6 @@
 float p=3;
-int x = 0;
-int y=(6+4);
-int sum= p+x+y;
+{int x = 0;}
+int y=(6+4); 
+int suma=p+x+y;
+x = suma;
+
