@@ -6,18 +6,13 @@ from compilerListener import compilerListener
 from TABLA import Variable, TS, Funcion
 
 
-class Escucha(compilerListener):
+class Escucha(compilerListener, ErrorListener):
     def __init__(self):
         super().__init__()
         self.ts = TS.getInstance()
         self.indent = 1
-        self.declaracion = 0
-        self.profundidad = 0
-        self.numNodos = 0
-
         self.hay_error_semantico = False
         self.hay_error_sintactico = False
-
         self.errores_sintacticos = []
         self.errores_semanticos = []
         self.advertencias = []
@@ -147,40 +142,57 @@ class Escucha(compilerListener):
         self.indent -= 1
         print("  " * self.indent + "FOR EXIT")
         self.ts.delContexto()
-        # ===================== DECLARACIÓN =====================
+
+    # ===================== DECLARACIÓN =====================
 
     def exitDeclaracion(self, ctx: compilerParser.DeclaracionContext):
         tipo = ctx.tipo().getText()
-        texto = ctx.getText()
-        declaracion = texto.replace(tipo, '').replace(';', '').strip()
-        partes = [p.strip() for p in declaracion.split(',')]
+        nombre = ctx.ID().getText()
 
-        for parte in partes:
-            if '=' in parte:
-                nombre, valor = [x.strip() for x in parte.split('=')]
-                inicializado = True
-            else:
-                nombre = parte
-                inicializado = False
+        if self.ts.buscarSimboloContexto(nombre):
+            self.reportar_error_semantico(
+                ctx.start.line,
+                f"Variable '{nombre}' ya declarada en este contexto."
+            )
+        else:
+            var = Variable(nombre, tipo)
+            var.setLinea(ctx.start.line)
+            inicializado = ctx.inic().getChildCount() > 0
+            if inicializado:
+                var.setInicializado(ctx.start.line)
+            self.ts.addSimbolo(var)
+            print(f"[INFO] Declarada variable '{nombre}' tipo {tipo}, inicializada: {inicializado}")
 
-            if self.ts.buscarSimboloContexto(nombre):
-                self.reportar_error_semantico(
-                    ctx.start.line,
-                    f"Variable '{nombre}' ya declarada en este contexto."
-                )
-            else:
-                var = Variable(nombre, tipo)
-                var.setLinea(ctx.start.line)
+    # ===================== LISTAVAR =====================
 
-                if inicializado:
-                    var.setInicializado(ctx.start.line)
+    def exitListavar(self, ctx: compilerParser.ListavarContext):
+        if ctx.getChildCount() == 0:
+            return
 
-                self.ts.addSimbolo(var)
+        # Subir por el árbol hasta encontrar el tipo
+        padre = ctx.parentCtx
+        while padre and not hasattr(padre, 'tipo'):
+            padre = padre.parentCtx
 
-                print(
-                    f"[INFO] Declarada variable '{nombre}' "
-                    f"tipo {tipo}, inicializada: {inicializado}"
-                )
+        if not padre:
+            return
+
+        tipo = padre.tipo().getText()
+        nombre = ctx.ID().getText()
+
+        if self.ts.buscarSimboloContexto(nombre):
+            self.reportar_error_semantico(
+                ctx.start.line,
+                f"Variable '{nombre}' ya declarada en este contexto."
+            )
+        else:
+            var = Variable(nombre, tipo)
+            var.setLinea(ctx.start.line)
+            inicializado = ctx.inic().getChildCount() > 0
+            if inicializado:
+                var.setInicializado(ctx.start.line)
+            self.ts.addSimbolo(var)
+            print(f"[INFO] Declarada variable '{nombre}' tipo {tipo}, inicializada: {inicializado}")
 
     # ===================== ASIGNACIÓN =====================
 
@@ -199,69 +211,37 @@ class Escucha(compilerListener):
         hubo_error = False
 
         if ctx.opal():
-
             valor = ctx.opal().getText()
             simbolo_valor = self.ts.buscarSimbolo(valor)
 
             if simbolo_valor:
-
                 if simbolo_valor.getTipoDato() != simbolo.getTipoDato():
                     self.reportar_error_semantico(
                         ctx.start.line,
                         f"Tipos incompatibles: no se puede asignar "
-                        f"'{simbolo_valor.getTipoDato()}' "
-                        f"a '{simbolo.getTipoDato()}'."
+                        f"'{simbolo_valor.getTipoDato()}' a '{simbolo.getTipoDato()}'."
                     )
                     hubo_error = True
-
             else:
-
                 if valor.replace('.', '', 1).isdigit():
-
-                    if '.' in valor and simbolo.getTipoDato() != "double":
+                    if '.' in valor and simbolo.getTipoDato() == "int":
                         self.reportar_error_semantico(
                             ctx.start.line,
-                            f"Tipos incompatibles: '{valor}' es double "
-                            f"pero la variable '{nombre}' es "
-                            f"{simbolo.getTipoDato()}."
-                        )
-                        hubo_error = True
-
-                    elif '.' not in valor and simbolo.getTipoDato() != "int":
-                        self.reportar_error_semantico(
-                            ctx.start.line,
-                            f"Tipos incompatibles: '{valor}' es int "
-                            f"pero la variable '{nombre}' es "
-                            f"{simbolo.getTipoDato()}."
-                        )
-                        hubo_error = True
-
-                elif valor.startswith('"') and valor.endswith('"'):
-
-                    if simbolo.getTipoDato() != "string":
-                        self.reportar_error_semantico(
-                            ctx.start.line,
-                            f"Tipos incompatibles: '{valor}' es string "
-                            f"pero la variable '{nombre}' es "
-                            f"{simbolo.getTipoDato()}."
+                            f"Tipos incompatibles: '{valor}' es decimal "
+                            f"pero la variable '{nombre}' es int."
                         )
                         hubo_error = True
 
         if not hubo_error:
             simbolo.setInicializado(ctx.start.line)
             simbolo.setUsado()
-
-            print(
-                f"[INFO] Asignación correcta: variable '{nombre}' "
-                f"marcada como usada e inicializada."
-            )
+            print(f"[INFO] Asignación correcta: variable '{nombre}' marcada como usada e inicializada.")
 
     # ===================== FACTOR =====================
 
     def exitFactor(self, ctx: compilerParser.FactorContext):
 
         if ctx.ID() and not ctx.call():
-
             nombre = ctx.ID().getText()
             simbolo = self.ts.buscarSimbolo(nombre)
 
@@ -290,56 +270,139 @@ class Escucha(compilerListener):
     # ===================== FUNCIÓN =====================
 
     def enterFuncion(self, ctx: compilerParser.FuncionContext):
-
         print("  " * self.indent + "FUNCION ENTER")
         self.indent += 1
 
-        tipo = ctx.tipo().getText() if ctx.tipo() else "void"
+        tipo = ctx.tipo().getText()
         nombre = ctx.ID().getText()
 
         if self.ts.buscarSimboloContexto(nombre):
-
             self.reportar_error_semantico(
                 ctx.start.line,
                 f"Función '{nombre}' ya declarada en este contexto."
             )
-
         else:
+            # Armar lista de parámetros ANTES de crear la Funcion
+            parametros = []
+            if ctx.parametros() and ctx.parametros().getChildCount() > 0:
+                params = ctx.parametros()
+                parametros.append((params.tipo().getText(), params.ID().getText()))
+                lista = params.lista_param()
+                while lista and lista.getChildCount() > 0:
+                    parametros.append((lista.tipo().getText(), lista.ID().getText()))
+                    lista = lista.lista_param()
 
-            fun = Funcion(nombre, tipo, [])
+            # Crear la función con los parámetros reales
+            fun = Funcion(nombre, tipo, parametros)
             fun.setLinea(ctx.start.line)
             fun.setInicializado(ctx.start.line)
-
             self.ts.addSimbolo(fun)
+            print(f"[INFO] Función '{nombre}' tipo {tipo} definida con {len(parametros)} parámetro(s).")
 
-            if ctx.bloque():
-                print(f"[INFO] Función '{nombre}' tipo {tipo} definida.")
-            else:
-                print(f"[INFO] Prototipo de función '{nombre}' tipo {tipo} declarado.")
-
+        # Abrir scope hijo para el cuerpo de la función
         self.ts.addContexto()
 
-    def exitFuncion(self, ctx: compilerParser.FuncionContext):
+        # Registrar parámetros en el scope hijo como variables
+        if ctx.parametros() and ctx.parametros().getChildCount() > 0:
+            params = ctx.parametros()
+            tipo_param = params.tipo().getText()
+            nombre_param = params.ID().getText()
+            var = Variable(nombre_param, tipo_param)
+            var.setLinea(ctx.start.line)
+            var.setInicializado(ctx.start.line)
+            self.ts.addSimbolo(var)
+            print(f"[INFO] Parámetro '{nombre_param}' tipo {tipo_param} registrado.")
 
+            lista = params.lista_param()
+            while lista and lista.getChildCount() > 0:
+                tipo_param = lista.tipo().getText()
+                nombre_param = lista.ID().getText()
+                var = Variable(nombre_param, tipo_param)
+                var.setLinea(ctx.start.line)
+                var.setInicializado(ctx.start.line)
+                self.ts.addSimbolo(var)
+                print(f"[INFO] Parámetro '{nombre_param}' tipo {tipo_param} registrado.")
+                lista = lista.lista_param()
+
+    def exitFuncion(self, ctx: compilerParser.FuncionContext):
         self.indent -= 1
-        print("  " * self.indent + "FUNCION EXIT")
+        nombre = ctx.ID().getText() if ctx.ID() else "?"
+        tipo = ctx.tipo().getText() if ctx.tipo() else "void"
+        print("  " * self.indent + f"FUNCION EXIT: {nombre}() -> {tipo}")
         self.ts.delContexto()
+    # ===================== CALL =====================
 
     # ===================== CALL =====================
 
     def exitCall(self, ctx: compilerParser.CallContext):
-
         nombre = ctx.ID().getText()
         simbolo = self.ts.buscarSimbolo(nombre)
 
         if not simbolo or not isinstance(simbolo, Funcion):
-
             self.reportar_error_semantico(
                 ctx.start.line,
                 f"Llamada a función '{nombre}' no declarada."
             )
+            return
 
-        else:
+        simbolo.setUsado()
 
-            simbolo.setUsado()
-            print(f"[INFO] Llamada correcta a función '{nombre}'.")
+        # Obtener argumentos pasados
+        args_pasados = []
+        if ctx.argumentos() and ctx.argumentos().getChildCount() > 0:
+            for child in ctx.argumentos().getChildren():
+                if isinstance(child, compilerParser.OpalContext):
+                    args_pasados.append(child.getText())
+
+        params_esperados = simbolo.getListaArgs()
+
+        # Verificar cantidad
+        if len(args_pasados) != len(params_esperados):
+            self.reportar_error_semantico(
+                ctx.start.line,
+                f"Función '{nombre}' espera {len(params_esperados)} argumento(s) "
+                f"pero se pasaron {len(args_pasados)}."
+            )
+            return
+
+        # Verificar tipos
+        for i, (arg, (tipo_esperado, nombre_param)) in enumerate(zip(args_pasados, params_esperados)):
+            simbolo_arg = self.ts.buscarSimbolo(arg)
+            if simbolo_arg:
+                tipo_arg = simbolo_arg.getTipoDato()
+                if tipo_arg != tipo_esperado:
+                    self.reportar_error_semantico(
+                        ctx.start.line,
+                        f"Argumento {i+1} de '{nombre}': se esperaba '{tipo_esperado}' "
+                        f"pero se pasó '{tipo_arg}'."
+                    )
+            else:
+                if '.' in arg and tipo_esperado == 'int':
+                    self.reportar_error_semantico(
+                        ctx.start.line,
+                        f"Argumento {i+1} de '{nombre}': se esperaba 'int' "
+                        f"pero se pasó un valor decimal."
+                    )
+
+        print(f"[INFO] Llamada correcta a función '{nombre}'.")
+    # ===================== FOR INIT =====================
+
+    def exitForInit(self, ctx: compilerParser.ForInitContext):
+        # Si es declaración (int j = 0)
+        if ctx.tipo():
+            tipo = ctx.tipo().getText()
+            nombre = ctx.ID().getText()
+
+            if self.ts.buscarSimboloContexto(nombre):
+                self.reportar_error_semantico(
+                    ctx.start.line,
+                    f"Variable '{nombre}' ya declarada en este contexto."
+                )
+            else:
+                var = Variable(nombre, tipo)
+                var.setLinea(ctx.start.line)
+                inicializado = ctx.inic().getChildCount() > 0
+                if inicializado:
+                    var.setInicializado(ctx.start.line)
+                self.ts.addSimbolo(var)
+                print(f"[INFO] Declarada variable '{nombre}' tipo {tipo} en for, inicializada: {inicializado}")

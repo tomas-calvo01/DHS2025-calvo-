@@ -1,6 +1,13 @@
 
 Tabla de Simbolos:
 --- Contexto 0 ---
+  suma: int
+  factorial: int
   x: int
   y: int
   z: int
+  acum: int
+  pi: double
+  radio: double
+  area: double
+  fact: int

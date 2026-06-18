@@ -1,7 +1,37 @@
-int x = 10, y, z;
-z = x + 5;
-y = 1;
-if(y > 5){
-    z = x + 33;
-    y = z;
+int suma(int a, int b) {
+    int resultado = a + b;
+    return resultado;
 }
+
+int factorial(int n) {
+    int resultado = 1;
+    int i = 1;
+    while (i <= n) {
+        resultado = resultado * i;
+        i = i + 1;
+    }
+    return resultado;
+}
+
+int x = 10;
+int y = 5;
+int z = suma(x, y);
+
+if (z > 10) {
+    int temp = z * 2;
+    z = temp;
+} else {
+    z = 0;
+}
+
+int acum = 0;
+
+for (int j = 0; j < 5; j++) {
+    acum = acum + j;
+}
+
+double pi = 3.14;
+double radio = 2.5;
+double area = pi * radio;
+
+int fact = factorial(x);
