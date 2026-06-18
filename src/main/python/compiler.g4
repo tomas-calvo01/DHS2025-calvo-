@@ -1,165 +1,210 @@
 grammar compiler;
 
-fragment LETRA : [A-Za-z] ;
-fragment DIGITO : [0-9] + ('.' [0-9]+)?  ;
+// ─── Fragments ───────────────────────────────────────────────────────────────
+fragment LETRA  : [A-Za-z] ;
+fragment DIGITO : [0-9] ;
 
-PA : '(' ;
-PC : ')' ;
-LLA : '{' ;
-LLC : '}' ;
-CA : '[' ;
-CC : ']' ;
-PYC : ';' ;
+// ─── Agrupadores ─────────────────────────────────────────────────────────────
+PA   : '(' ;
+PC   : ')' ;
+LLA  : '{' ;
+LLC  : '}' ;
+CA   : '[' ;
+CC   : ']' ;
+PYC  : ';' ;
 COMA : ',' ;
-ASIG : '=' ;
-SUMA : '+' ;
+
+// ─── Operadores aritméticos ───────────────────────────────────────────────────
+ASIG  : '=' ;
+SUMA  : '+' ;
 RESTA : '-' ;
-MULT : '*' ;
-DIV : '/' ;
-MOD : '%' ;
-MENOR : '<' ;
-MAYOR : '>' ;
+MULT  : '*' ;
+DIV   : '/' ;
+MOD   : '%' ;
+
+// ─── Operadores relacionales ──────────────────────────────────────────────────
 MENOREQ : '<=' ;
 MAYOREQ : '>=' ;
-EQUAL : '==' ;
-NEQUAL : '!=' ;
-AND : '&&' ;
-OR : '||' ;
-NOT : '!' ;
+EQUAL   : '==' ;
+NEQUAL  : '!=' ;
+MENOR   : '<' ;
+MAYOR   : '>' ;
 
-NUMERO : DIGITO+ ;
-
-VOID : 'void';
-INT : 'int' ;
-DOUBLE : 'double' ;
-FLOAT : 'float';
-IF : 'if' ;
-ELSE : 'else' ;
-FOR : 'for' ;
-WHILE : 'while' ;
-RETURN : 'return' ;
-
-ID : (LETRA | '_')(LETRA | DIGITO | '_')* ;
-
-WS : [ \n\r\t] -> skip ;
-OTRO : . ;
-
-
-programa : instrucciones EOF ;
-
-instrucciones : instruccion instrucciones
-              |
-              ;
-
-instruccion : asignacion
-            | declaracion
-            | iif
-            | iwhile
-            | bloque
-            | ifor
-            | funcion
-            |returnstmt
-            |llamada
-            ;
-
-bloque : LLA instrucciones LLC ;
-
-iwhile : WHILE PA opal PC instruccion ;
-
-iif : IF PA opal PC instruccion ielse ;
-
-ielse : ELSE instruccion
-           |
-           ;
-
-ifor : FOR PA (asignacionFor | declaracionFor) PYC (opal) PYC (asignacionFor) PC bloque ;
-
-asignacionFor : ID ASIG opal
-              | ID INCREMENTO
-              | ID DECREMENTO
-          ;
-
-declaracionFor: tipo ID inic listavar ;
-
-declaracion : tipo ID inic listavar PYC ;
-
-listavar: COMA ID inic listavar
-        |
-        ;
-
-inic : ASIG opal
-     |
-     ;
-
-tipo : INT
-     | DOUBLE
-     | FLOAT
-     ;
-
-asignacion : ID ASIG opal PYC
-          | ID (INCREMENTO | DECREMENTO) PYC
-          
-          ;
+// ─── Operadores de incremento/decremento ──────────────────────────────────────
 INCREMENTO : '++' ;
 DECREMENTO : '--' ;
 
-opal : exp
-     ;
+// ─── Literales numéricos ──────────────────────────────────────────────────────
+DECIMAL : DIGITO+ '.' DIGITO+ ;
+NUMERO  : DIGITO+ ;
+
+// ─── Palabras reservadas ──────────────────────────────────────────────────────
+INT    : 'int' ;
+DOUBLE : 'double' ;
+FLOAT  : 'float' ;
+IF     : 'if' ;
+ELSE   : 'else' ;
+FOR    : 'for' ;
+WHILE  : 'while' ;
+RETURN : 'return' ;
+
+// ─── Identificadores ──────────────────────────────────────────────────────────
+ID : (LETRA | '_')(LETRA | DIGITO | '_')* ;
+
+// ─── Ignorar whitespace ───────────────────────────────────────────────────────
+WS   : [ \n\r\t] -> skip ;
+OTRO : . ;
+
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// REGLAS DEL PARSER
+// ═══════════════════════════════════════════════════════════════════════════════
+
+programa : instrucciones EOF ;
+
+instrucciones
+    : instruccion instrucciones
+    |
+    ;
+
+instruccion
+    : declaracion
+    | asignacion
+    | iif
+    | iwhile
+    | ifor
+    | funcion
+    | returnstmt
+    | llamada
+    | bloque
+    ;
+
+// ─── Bloque ───────────────────────────────────────────────────────────────────
+bloque : LLA instrucciones LLC ;
+
+// ─── While ────────────────────────────────────────────────────────────────────
+iwhile : WHILE PA opal PC instruccion ;
+
+// ─── If / else ────────────────────────────────────────────────────────────────
+iif   : IF PA opal PC instruccion ielse ;
+ielse : ELSE instruccion
+      |
+      ;
+
+// ─── For ──────────────────────────────────────────────────────────────────────
+ifor : FOR PA forInit PYC opal PYC asignacionFor PC bloque ;
+
+forInit
+    : tipo ID inic listaVarFor
+    | listaAsignacionFor
+    ;
+
+listaVarFor
+    : COMA ID inic listaVarFor
+    |
+    ;
+
+listaAsignacionFor : asignacionFor (COMA asignacionFor)* ;
+
+asignacionFor
+    : ID ASIG opal
+    | ID INCREMENTO
+    | ID DECREMENTO
+    | INCREMENTO ID
+    | DECREMENTO ID
+    ;
+
+// ─── Declaración ─────────────────────────────────────────────────────────────
+declaracion : tipo ID inic listavar PYC ;
+
+listavar
+    : COMA ID inic listavar
+    |
+    ;
+
+inic
+    : ASIG opal
+    |
+    ;
+
+tipo
+    : INT
+    | DOUBLE
+    | FLOAT
+    ;
+
+// ─── Asignación ───────────────────────────────────────────────────────────────
+asignacion
+    : ID ASIG opal PYC
+    | ID INCREMENTO PYC
+    | ID DECREMENTO PYC
+    | INCREMENTO ID PYC
+    | DECREMENTO ID PYC
+    ;
+
+// ─── Funciones ────────────────────────────────────────────────────────────────
+funcion : tipo ID PA parametros PC bloque ;
+
+parametros
+    : tipo ID lista_param
+    |
+    ;
+
+lista_param
+    : COMA tipo ID lista_param
+    |
+    ;
+
+// ─── Return ───────────────────────────────────────────────────────────────────
+returnstmt : RETURN opal PYC ;
+
+// ─── Llamada a función como instrucción ───────────────────────────────────────
+llamada : call PYC ;
+
+// ─── Expresiones ─────────────────────────────────────────────────────────────
+opal : relacion ;
+
+relacion : exp l ;
 
 exp : term e ;
 
-e : SUMA term e
-  | RESTA term e
-  |
-  ;
+e
+    : SUMA  term e
+    | RESTA term e
+    |
+    ;
 
-term : factor t
-     | factor l
-     ;
+term : factor t ;
 
-t : MULT factor t
-  | DIV factor t
-  | MOD factor t
-  |
-  ;
+t
+    : MULT factor t
+    | DIV  factor t
+    | MOD  factor t
+    |
+    ;
 
+l
+    : MENOR   exp l
+    | MAYOR   exp l
+    | MENOREQ exp l
+    | MAYOREQ exp l
+    | EQUAL   exp l
+    | NEQUAL  exp l
+    |
+    ;
 
-factor :  NUMERO
-       | ID
-       | call
-       |PA exp PC
-       ;
-
-l : EQUAL factor
-  | NEQUAL factor
-  | MENOR factor
-  | MENOREQ factor
-  | MAYOR factor
-  | MAYOREQ factor
-  | AND factor
-  | OR factor
-  | NOT factor
-  ;
+// ─── Factor / llamada ─────────────────────────────────────────────────────────
+factor
+    : PA exp PC
+    | NUMERO
+    | DECIMAL
+    | call
+    | ID
+    ;
 
 call : ID PA argumentos PC ;
 
-argumentos : exp (COMA exp)* 
-                 | 
-                 ;
-funcion : (tipo | VOID)ID PA parametros PC bloque 
-         | (tipo | VOID) ID PA parametros PC PYC
-         ;
-
-parametros : tipo ID (COMA tipo ID)* |
-                 ;
-
-
-
-returnstmt
-     : RETURN opal PYC
-     ;
- 
-llamada
-    : call PYC
+argumentos
+    : opal (COMA opal)*
+    |
     ;
-    

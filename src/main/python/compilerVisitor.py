@@ -1,4 +1,4 @@
-# Generated from d:/Users/Usuario/Documents/DHS(Calvo)/DHS2025-calvo-/src/main/python/compiler.g4 by ANTLR 4.13.1
+# Generated from c:/Users/tomas/OneDrive/Documents/GitHub/DHS2025-calvo-/src/main/python/compiler.g4 by ANTLR 4.13.1
 from antlr4 import *
 if "." in __name__:
     from .compilerParser import compilerParser
@@ -49,13 +49,23 @@ class compilerVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by compilerParser#asignacionFor.
-    def visitAsignacionFor(self, ctx:compilerParser.AsignacionForContext):
+    # Visit a parse tree produced by compilerParser#forInit.
+    def visitForInit(self, ctx:compilerParser.ForInitContext):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by compilerParser#declaracionFor.
-    def visitDeclaracionFor(self, ctx:compilerParser.DeclaracionForContext):
+    # Visit a parse tree produced by compilerParser#listaVarFor.
+    def visitListaVarFor(self, ctx:compilerParser.ListaVarForContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by compilerParser#listaAsignacionFor.
+    def visitListaAsignacionFor(self, ctx:compilerParser.ListaAsignacionForContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by compilerParser#asignacionFor.
+    def visitAsignacionFor(self, ctx:compilerParser.AsignacionForContext):
         return self.visitChildren(ctx)
 
 
@@ -84,8 +94,38 @@ class compilerVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by compilerParser#funcion.
+    def visitFuncion(self, ctx:compilerParser.FuncionContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by compilerParser#parametros.
+    def visitParametros(self, ctx:compilerParser.ParametrosContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by compilerParser#lista_param.
+    def visitLista_param(self, ctx:compilerParser.Lista_paramContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by compilerParser#returnstmt.
+    def visitReturnstmt(self, ctx:compilerParser.ReturnstmtContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by compilerParser#llamada.
+    def visitLlamada(self, ctx:compilerParser.LlamadaContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by compilerParser#opal.
     def visitOpal(self, ctx:compilerParser.OpalContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by compilerParser#relacion.
+    def visitRelacion(self, ctx:compilerParser.RelacionContext):
         return self.visitChildren(ctx)
 
 
@@ -109,13 +149,13 @@ class compilerVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by compilerParser#factor.
-    def visitFactor(self, ctx:compilerParser.FactorContext):
+    # Visit a parse tree produced by compilerParser#l.
+    def visitL(self, ctx:compilerParser.LContext):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by compilerParser#l.
-    def visitL(self, ctx:compilerParser.LContext):
+    # Visit a parse tree produced by compilerParser#factor.
+    def visitFactor(self, ctx:compilerParser.FactorContext):
         return self.visitChildren(ctx)
 
 
@@ -126,26 +166,6 @@ class compilerVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by compilerParser#argumentos.
     def visitArgumentos(self, ctx:compilerParser.ArgumentosContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by compilerParser#funcion.
-    def visitFuncion(self, ctx:compilerParser.FuncionContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by compilerParser#parametros.
-    def visitParametros(self, ctx:compilerParser.ParametrosContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by compilerParser#returnstmt.
-    def visitReturnstmt(self, ctx:compilerParser.ReturnstmtContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by compilerParser#llamada.
-    def visitLlamada(self, ctx:compilerParser.LlamadaContext):
         return self.visitChildren(ctx)
 
 

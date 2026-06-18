@@ -5,6 +5,7 @@ from compilerParser import compilerParser
 from compilerListener import compilerListener
 from TABLA import Variable, TS, Funcion
 
+
 class Escucha(compilerListener):
     def __init__(self):
         super().__init__()
@@ -13,45 +14,141 @@ class Escucha(compilerListener):
         self.declaracion = 0
         self.profundidad = 0
         self.numNodos = 0
-        self.hay_error_semantico = False  
-        self.hay_error_sintactico = False  
-    
-    def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
-        print(f"[ERROR SINTÁCTICO] {msg} en línea {line}, columna {column}")
+
+        self.hay_error_semantico = False
+        self.hay_error_sintactico = False
+
+        self.errores_sintacticos = []
+        self.errores_semanticos = []
+        self.advertencias = []
+
+    # ===================== GESTIÓN DE ERRORES =====================
+
+    def reportar_error_sintactico(self, linea, columna, mensaje):
+        error = f"[ERROR SINTÁCTICO] Línea {linea}, columna {columna}: {mensaje}"
+        self.errores_sintacticos.append(error)
         self.hay_error_sintactico = True
+        print(error)
+
+    def reportar_error_semantico(self, linea, mensaje):
+        error = f"[ERROR SEMÁNTICO] Línea {linea}: {mensaje}"
+        self.errores_semanticos.append(error)
+        self.hay_error_semantico = True
+        print(error)
+
+    def reportar_advertencia(self, linea, mensaje):
+        advertencia = f"[ADVERTENCIA] Línea {linea}: {mensaje}"
+        self.advertencias.append(advertencia)
+        print(advertencia)
+
+    def tiene_errores(self):
+        return self.hay_error_sintactico or self.hay_error_semantico
+
+    def generar_reporte(self):
+        print("\n" + "=" * 60)
+        print("               REPORTE DE ERRORES")
+        print("=" * 60)
+
+        if self.errores_sintacticos:
+            print("\nERRORES SINTÁCTICOS:")
+            for e in self.errores_sintacticos:
+                print(" ", e)
+
+        if self.errores_semanticos:
+            print("\nERRORES SEMÁNTICOS:")
+            for e in self.errores_semanticos:
+                print(" ", e)
+
+        if self.advertencias:
+            print("\nADVERTENCIAS:")
+            for a in self.advertencias:
+                print(" ", a)
+
+        print("=" * 60)
+
+    # ===================== SINTAXIS =====================
+
+    def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
+        self.reportar_error_sintactico(line, column, msg)
+
+    # ===================== PROGRAMA =====================
 
     def enterPrograma(self, ctx: compilerParser.ProgramaContext):
         print("---Nuevo contexto---")
 
     def exitPrograma(self, ctx: compilerParser.ProgramaContext):
-        ts = TS.getInstance()
         print("---Contexto finalizado---")
 
-        if self.hay_error_sintactico:
-            print("\n[ERROR] Se detectaron errores sintácticos. No se mostrará la tabla de símbolos.\n")
-            return
-        
-        if self.hay_error_semantico:
-            print("\n[ERROR] Se detectaron errores semánticos. No se mostrará la tabla de símbolos.\n")
-            return
-
-        hay_variables_no_usadas = False
-        for i, contexto in enumerate(ts.contextos):
+        # Advertencias por símbolos no usados
+        for i, contexto in enumerate(self.ts.contextos):
             for nombre, simbolo in contexto.simbolos.items():
-                if isinstance(simbolo, Variable) and not simbolo.getUsado():
-                    print(f"[ERROR SEMÁNTICO] Variable '{nombre}' declarada pero no usada (Contexto {i}).")
-                    hay_variables_no_usadas = True
-                if isinstance(simbolo, Funcion) and not simbolo.getUsado():
-                    print(f"[ERROR SEMÁNTICO] Función '{nombre}' declarada pero no usada (Contexto {i}).")
-                    hay_variables_no_usadas = True
 
-        if hay_variables_no_usadas:
-            print("\n[ERROR] Se detectaron errores semánticos. No se mostrará la tabla de símbolos.\n")
+                if isinstance(simbolo, Variable) and not simbolo.getUsado():
+                    self.reportar_advertencia(
+                        simbolo.getLinea(),
+                        f"Variable '{nombre}' declarada pero no usada (Contexto {i})"
+                    )
+
+                if isinstance(simbolo, Funcion) and not simbolo.getUsado():
+                    self.reportar_advertencia(
+                        simbolo.getLinea(),
+                        f"Función '{nombre}' declarada pero no usada (Contexto {i})"
+                    )
+
+        if self.tiene_errores():
+            self.generar_reporte()
+            print("\n[ERROR] Se detectaron errores. No se mostrará la tabla de símbolos.\n")
             return
 
-        print(ts)
+        self.generar_reporte()
+        print(self.ts)
+        self.generar_archivo_tabla()
 
-  
+    def generar_archivo_tabla(self):
+        try:
+            with open("tabla_simbolos.txt", "w", encoding="utf-8") as f:
+                f.write(str(self.ts))
+            print("[INFO] Archivo 'tabla_simbolos.txt' generado correctamente.")
+        except Exception as ex:
+            print(f"[ERROR] No se pudo escribir el archivo de la tabla de símbolos: {ex}")
+
+    # ===================== WHILE =====================
+
+    def enterIwhile(self, ctx: compilerParser.IwhileContext):
+        print("  " * self.indent + "WHILE ENTER")
+        self.indent += 1
+        self.ts.addContexto()
+
+    def exitIwhile(self, ctx: compilerParser.IwhileContext):
+        self.indent -= 1
+        print("  " * self.indent + "WHILE EXIT")
+        self.ts.delContexto()
+
+    # ===================== IF =====================
+
+    def enterIif(self, ctx: compilerParser.IifContext):
+        print("  " * self.indent + "IF ENTER")
+        self.indent += 1
+        self.ts.addContexto()
+
+    def exitIif(self, ctx: compilerParser.IifContext):
+        self.indent -= 1
+        print("  " * self.indent + "IF EXIT")
+        self.ts.delContexto()
+
+    # ===================== FOR =====================
+
+    def enterIfor(self, ctx: compilerParser.IforContext):
+        print("  " * self.indent + "FOR ENTER")
+        self.indent += 1
+        self.ts.addContexto()
+
+    def exitIfor(self, ctx: compilerParser.IforContext):
+        self.indent -= 1
+        print("  " * self.indent + "FOR EXIT")
+        self.ts.delContexto()
+        # ===================== DECLARACIÓN =====================
+
     def exitDeclaracion(self, ctx: compilerParser.DeclaracionContext):
         tipo = ctx.tipo().getText()
         texto = ctx.getText()
@@ -67,83 +164,152 @@ class Escucha(compilerListener):
                 inicializado = False
 
             if self.ts.buscarSimboloContexto(nombre):
-                print(f"[ERROR SEMÁNTICO] Variable '{nombre}' ya declarada en este contexto.")
-                self.hay_error_semantico = True
+                self.reportar_error_semantico(
+                    ctx.start.line,
+                    f"Variable '{nombre}' ya declarada en este contexto."
+                )
             else:
                 var = Variable(nombre, tipo)
-                var.setInicializado(inicializado)
-                self.ts.addSimbolo(var)
-                print(f"[INFO] Declarada variable '{nombre}' tipo {tipo}, inicializada: {inicializado}")
+                var.setLinea(ctx.start.line)
 
-    
+                if inicializado:
+                    var.setInicializado(ctx.start.line)
+
+                self.ts.addSimbolo(var)
+
+                print(
+                    f"[INFO] Declarada variable '{nombre}' "
+                    f"tipo {tipo}, inicializada: {inicializado}"
+                )
+
+    # ===================== ASIGNACIÓN =====================
+
     def exitAsignacion(self, ctx: compilerParser.AsignacionContext):
+
         nombre = ctx.ID().getText()
         simbolo = self.ts.buscarSimbolo(nombre)
 
         if not simbolo:
-            print(f"[ERROR SEMÁNTICO] Variable '{nombre}' no declarada antes de su uso.")
-            self.hay_error_semantico = True
+            self.reportar_error_semantico(
+                ctx.start.line,
+                f"Variable '{nombre}' no declarada antes de su uso."
+            )
             return
 
         hubo_error = False
 
         if ctx.opal():
+
             valor = ctx.opal().getText()
             simbolo_valor = self.ts.buscarSimbolo(valor)
 
             if simbolo_valor:
+
                 if simbolo_valor.getTipoDato() != simbolo.getTipoDato():
-                    print(f"[ERROR SEMÁNTICO] Tipos incompatibles: no se puede asignar '{simbolo_valor.getTipoDato()}' a '{simbolo.getTipoDato()}'.")
-                    self.hay_error_semantico = True
+                    self.reportar_error_semantico(
+                        ctx.start.line,
+                        f"Tipos incompatibles: no se puede asignar "
+                        f"'{simbolo_valor.getTipoDato()}' "
+                        f"a '{simbolo.getTipoDato()}'."
+                    )
                     hubo_error = True
+
             else:
+
                 if valor.replace('.', '', 1).isdigit():
+
                     if '.' in valor and simbolo.getTipoDato() != "double":
-                        print(f"[ERROR SEMÁNTICO] Tipos incompatibles: '{valor}' es double pero la variable '{nombre}' es {simbolo.getTipoDato()}.")
-                        self.hay_error_semantico = True
+                        self.reportar_error_semantico(
+                            ctx.start.line,
+                            f"Tipos incompatibles: '{valor}' es double "
+                            f"pero la variable '{nombre}' es "
+                            f"{simbolo.getTipoDato()}."
+                        )
                         hubo_error = True
+
                     elif '.' not in valor and simbolo.getTipoDato() != "int":
-                        print(f"[ERROR SEMÁNTICO] Tipos incompatibles: '{valor}' es int pero la variable '{nombre}' es {simbolo.getTipoDato()}.")
-                        self.hay_error_semantico = True
+                        self.reportar_error_semantico(
+                            ctx.start.line,
+                            f"Tipos incompatibles: '{valor}' es int "
+                            f"pero la variable '{nombre}' es "
+                            f"{simbolo.getTipoDato()}."
+                        )
                         hubo_error = True
+
                 elif valor.startswith('"') and valor.endswith('"'):
+
                     if simbolo.getTipoDato() != "string":
-                        print(f"[ERROR SEMÁNTICO] Tipos incompatibles: '{valor}' es string pero la variable '{nombre}' es {simbolo.getTipoDato()}.")
-                        self.hay_error_semantico = True
+                        self.reportar_error_semantico(
+                            ctx.start.line,
+                            f"Tipos incompatibles: '{valor}' es string "
+                            f"pero la variable '{nombre}' es "
+                            f"{simbolo.getTipoDato()}."
+                        )
                         hubo_error = True
 
         if not hubo_error:
-            simbolo.setInicializado()
+            simbolo.setInicializado(ctx.start.line)
             simbolo.setUsado()
-            print(f"[INFO] Asignación correcta: variable '{nombre}' marcada como usada e inicializada.")
 
-  
+            print(
+                f"[INFO] Asignación correcta: variable '{nombre}' "
+                f"marcada como usada e inicializada."
+            )
+
+    # ===================== FACTOR =====================
+
     def exitFactor(self, ctx: compilerParser.FactorContext):
-        if ctx.ID():
+
+        if ctx.ID() and not ctx.call():
+
             nombre = ctx.ID().getText()
             simbolo = self.ts.buscarSimbolo(nombre)
 
             if not simbolo:
-                print(f"[ERROR SEMÁNTICO] Variable '{nombre}' no declarada antes de su uso.")
-                self.hay_error_semantico = True
+                self.reportar_error_semantico(
+                    ctx.start.line,
+                    f"Variable '{nombre}' no declarada antes de su uso."
+                )
+                return
+
+            if isinstance(simbolo, Funcion):
+                self.reportar_error_semantico(
+                    ctx.start.line,
+                    f"'{nombre}' es una función, no se puede usar como variable."
+                )
                 return
 
             if not simbolo.getInicializado():
-                print(f"[ERROR SEMÁNTICO] Variable '{nombre}' usada sin inicializar.")
-                self.hay_error_semantico = True
+                self.reportar_error_semantico(
+                    ctx.start.line,
+                    f"Variable '{nombre}' usada sin inicializar."
+                )
 
             simbolo.setUsado()
 
-   
-    def exitFuncion(self, ctx: compilerParser.FuncionContext):
+    # ===================== FUNCIÓN =====================
+
+    def enterFuncion(self, ctx: compilerParser.FuncionContext):
+
+        print("  " * self.indent + "FUNCION ENTER")
+        self.indent += 1
+
         tipo = ctx.tipo().getText() if ctx.tipo() else "void"
         nombre = ctx.ID().getText()
 
         if self.ts.buscarSimboloContexto(nombre):
-            print(f"[ERROR SEMÁNTICO] Función '{nombre}' ya declarada en este contexto.")
-            self.hay_error_semantico = True
+
+            self.reportar_error_semantico(
+                ctx.start.line,
+                f"Función '{nombre}' ya declarada en este contexto."
+            )
+
         else:
+
             fun = Funcion(nombre, tipo, [])
+            fun.setLinea(ctx.start.line)
+            fun.setInicializado(ctx.start.line)
+
             self.ts.addSimbolo(fun)
 
             if ctx.bloque():
@@ -151,15 +317,29 @@ class Escucha(compilerListener):
             else:
                 print(f"[INFO] Prototipo de función '{nombre}' tipo {tipo} declarado.")
 
- 
+        self.ts.addContexto()
+
+    def exitFuncion(self, ctx: compilerParser.FuncionContext):
+
+        self.indent -= 1
+        print("  " * self.indent + "FUNCION EXIT")
+        self.ts.delContexto()
+
+    # ===================== CALL =====================
+
     def exitCall(self, ctx: compilerParser.CallContext):
+
         nombre = ctx.ID().getText()
         simbolo = self.ts.buscarSimbolo(nombre)
 
         if not simbolo or not isinstance(simbolo, Funcion):
-            print(f"[ERROR SEMÁNTICO] Llamada a función '{nombre}' no declarada.")
-            self.hay_error_semantico = True
+
+            self.reportar_error_semantico(
+                ctx.start.line,
+                f"Llamada a función '{nombre}' no declarada."
+            )
+
         else:
+
             simbolo.setUsado()
             print(f"[INFO] Llamada correcta a función '{nombre}'.")
-

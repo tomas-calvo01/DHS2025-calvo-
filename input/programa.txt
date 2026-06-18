@@ -1,6 +1,7 @@
-float p=3;
-{int x = 0;}
-int y=(6+4); 
-int suma=p+x+y;
-x = suma;
-
+int x = 10, y, z;
+z = x + 5;
+y = 1;
+if(y > 5){
+    z = x + 33;
+    y = z;
+}

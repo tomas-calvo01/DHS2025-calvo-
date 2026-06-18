@@ -1,10 +1,10 @@
-
 class ID:
     def __init__(self, nombre, tipoDato):
         self.nombre = nombre
         self.tipoDato = tipoDato
         self.inicializado = False
         self.usado = False
+        self.linea = 0
 
     def getNombre(self):
         return self.nombre
@@ -12,8 +12,10 @@ class ID:
     def getTipoDato(self):
         return self.tipoDato
 
-    def setInicializado(self, val=True):
-        self.inicializado = val
+    def setInicializado(self, linea=0):
+        self.inicializado = True
+        if linea > 0:
+            self.linea = linea
 
     def getInicializado(self):
         return self.inicializado
@@ -24,10 +26,17 @@ class ID:
     def getUsado(self):
         return self.usado
 
+    def getLinea(self):
+        return self.linea
+
+    def setLinea(self, linea):
+        self.linea = linea
+
 
 class Variable(ID):
     def __init__(self, nombre, tipoDato):
         super().__init__(nombre, tipoDato)
+
 
 class Funcion(ID):
     def __init__(self, nombre, tipoDato, args=None):
@@ -47,6 +56,7 @@ class Contexto:
 
     def buscarSimbolo(self, nombre):
         return self.simbolos.get(nombre, None)
+
     def __str__(self):
         if not self.simbolos:
             return "  (vacío)\n"
@@ -57,7 +67,7 @@ class TS:
     _instancia = None
 
     def __init__(self):
-        self.contextos = [Contexto()]  
+        self.contextos = [Contexto()]
 
     @staticmethod
     def getInstance():
@@ -73,7 +83,11 @@ class TS:
             self.contextos.pop()
 
     def addSimbolo(self, id):
+        # Verifica si ya existe en el contexto ACTUAL -> doble declaración
+        if id.getNombre() in self.contextos[-1].simbolos:
+            return False
         self.contextos[-1].addSimbolo(id)
+        return True
 
     def buscarSimbolo(self, nombre):
         for contexto in reversed(self.contextos):
@@ -83,8 +97,8 @@ class TS:
         return None
 
     def buscarSimboloContexto(self, nombre):
-        
         return self.contextos[-1].buscarSimbolo(nombre)
+
     def __str__(self):
         resultado = "\nTabla de Simbolos:\n"
         for i, contexto in enumerate(self.contextos):
