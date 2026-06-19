@@ -1,54 +1,7 @@
-FUNC suma:
-pop a
-pop b
-t0 = a + b
-resultado = t0
-return resultado
-END FUNC suma
-FUNC factorial:
-pop n
-resultado = 1
-i = 1
-L0:
-t1 = i <= n
-if not t1 goto L1
-t2 = resultado * i
-resultado = t2
-t3 = i + 1
-i = t3
-goto L0
-L1:
-return resultado
-END FUNC factorial
-x = 10
-y = 5
-param x
-param y
-t4 = call suma
-z = t4
-t5 = z > 10
-if not t5 goto L2
-t6 = z * 2
-temp = t6
-z = temp
-goto L3
-L2:
-z = 0
-L3:
-acum = 0
-L4:
-t7 = j < 5
-if not t7 goto L5
-t8 = acum + j
-acum = t8
-t9 = j + 1
-j = t9
-goto L4
-L5:
-pi = 3.14
-radio = 2.5
-t10 = pi * radio
-area = t10
-param x
-t11 = call factorial
-fact = t11
+x = 5
+t0 = 5 * 5
+a = t0
+t1 = t0 * 10
+b = t1
+t2 = t1 * 5
+c = t2
