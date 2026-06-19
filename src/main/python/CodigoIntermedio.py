@@ -434,25 +434,33 @@ class CodigoIntermedio(compilerVisitor):
     # ==========================================
     # FUNCION
     # ==========================================
-
     def visitFuncion(self, ctx: compilerParser.FuncionContext):
         nombre = ctx.ID().getText()
         self.emitir(f"FUNC {nombre}:")
 
-        # Emitir pop por cada parámetro
+        # Abrir el contexto de la función ANTES de declarar los parámetros
+        self.abrirContexto()
+
+        # Emitir pop por cada parámetro y registrarlo en el contexto de la función
         if ctx.parametros() and ctx.parametros().getChildCount() > 0:
             params = ctx.parametros()
             # El primero
-            self.emitir(f"pop {params.ID().getText()}")
+            nombre_param = self.declararVariable(params.ID().getText())
+            self.emitir(f"pop {nombre_param}")
             # El resto via lista_param
             lista = params.lista_param()
             while lista and lista.getChildCount() > 0:
-                self.emitir(f"pop {lista.ID().getText()}")
+                nombre_param = self.declararVariable(lista.ID().getText())
+                self.emitir(f"pop {nombre_param}")
                 lista = lista.lista_param()
 
-        self.visit(ctx.bloque())
+        # Visitamos los hijos del bloque directamente (sin abrir otro contexto extra)
+        self.visitChildren(ctx.bloque())
+
+        self.cerrarContexto()
         self.emitir(f"END FUNC {nombre}")
         return None
+  
     # ==========================================
     # FOR
     # ==========================================

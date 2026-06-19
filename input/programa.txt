@@ -1,3 +1,18 @@
-int x = 3;
-int y = 4;
-int z = (x + y) * (x + 1);
+int x = 10;
+int y = 20;
+
+int sumar(int a, int b) {
+    return a + b;
+}
+
+int multiplicar(int a, int b) {
+    return a * b;
+}
+
+int z = sumar(x, y);
+int w = multiplicar(z, 3);
+
+if (x < y) {
+    int x = 99;
+    int resultado = sumar(x, w);
+}
