@@ -2,6 +2,5 @@
 Tabla de Simbolos:
 --- Contexto 0 ---
   x: int
-  a: int
-  b: int
-  c: int
+  y: int
+  z: int

@@ -75,7 +75,7 @@ class Escucha(compilerListener, ErrorListener):
         print("---Contexto finalizado---")
 
         # Advertencias por símbolos no usados
-        for i, contexto in enumerate(self.ts.contextos):
+        for i, contexto in enumerate(self.ts.todosLosContextos()):
             for nombre, simbolo in contexto.simbolos.items():
 
                 if isinstance(simbolo, Variable) and not simbolo.getUsado():

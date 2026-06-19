@@ -1,4 +1,3 @@
-int x = 5;
-int a = x * x;
-int b = a * 10;
-int c = b * 5;
+int x = 3;
+int y = 4;
+int z = (x + y) * (x + 1);

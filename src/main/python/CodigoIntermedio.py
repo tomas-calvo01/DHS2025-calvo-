@@ -8,6 +8,8 @@ class CodigoIntermedio(compilerVisitor):
         self.codigo = []
         self.temp_counter = 0
         self.label_counter = 0
+        self.pila_contextos = [{}]
+        self.nivel = 0
 
     # ==========================================
     # AUXILIARES
@@ -25,6 +27,29 @@ class CodigoIntermedio(compilerVisitor):
 
     def emitir(self, instruccion):
         self.codigo.append(instruccion)
+    
+    # ==========================================
+    # MANEJO DE CONTEXTOS
+    # ==========================================
+
+    def abrirContexto(self):
+        self.nivel += 1
+        self.pila_contextos.append({})
+
+    def cerrarContexto(self):
+        self.pila_contextos.pop()
+        self.nivel -= 1
+
+    def declararVariable(self, nombre):
+        nombre_real = f"{nombre}_{self.nivel}"
+        self.pila_contextos[-1][nombre] = nombre_real
+        return nombre_real
+
+    def buscarVariable(self, nombre):
+        for contexto in reversed(self.pila_contextos):
+            if nombre in contexto:
+                return contexto[nombre]
+        return nombre
 
     def obtenerCodigo(self):
         return "\n".join(self.codigo)
@@ -160,7 +185,8 @@ class CodigoIntermedio(compilerVisitor):
             return ctx.DECIMAL().getText()
 
         if ctx.ID():
-            return ctx.ID().getText()
+            nombre = ctx.ID().getText()
+            return self.buscarVariable(nombre)
 
         if ctx.call():
             return self.visit(ctx.call())
@@ -212,7 +238,7 @@ class CodigoIntermedio(compilerVisitor):
 
     def visitDeclaracion(self, ctx: compilerParser.DeclaracionContext):
 
-        variable = ctx.ID().getText()
+        variable = self.declararVariable(ctx.ID().getText())
 
         if ctx.inic().getChildCount() > 0:
             valor = self.visit(ctx.inic().opal())
@@ -235,7 +261,7 @@ class CodigoIntermedio(compilerVisitor):
         if ctx.getChildCount() == 0:
             return None
 
-        variable = ctx.ID().getText()
+        variable = self.declararVariable(ctx.ID().getText())
 
         if ctx.inic().getChildCount() > 0:
             valor = self.visit(ctx.inic().opal())
@@ -260,7 +286,7 @@ class CodigoIntermedio(compilerVisitor):
         # ++i
         if primer_hijo == "++":
 
-            variable = ctx.ID().getText()
+            variable = self.buscarVariable(ctx.ID().getText())
 
             temp = self.nuevoTemp()
 
@@ -270,7 +296,7 @@ class CodigoIntermedio(compilerVisitor):
         # --i
         elif primer_hijo == "--":
 
-            variable = ctx.ID().getText()
+            variable = self.buscarVariable(ctx.ID().getText())
 
             temp = self.nuevoTemp()
 
@@ -280,7 +306,7 @@ class CodigoIntermedio(compilerVisitor):
         # i++
         elif ctx.INCREMENTO():
 
-            variable = ctx.ID().getText()
+            variable = self.buscarVariable(ctx.ID().getText())
 
             temp = self.nuevoTemp()
 
@@ -290,7 +316,7 @@ class CodigoIntermedio(compilerVisitor):
         # i--
         elif ctx.DECREMENTO():
 
-            variable = ctx.ID().getText()
+            variable = self.buscarVariable(ctx.ID().getText())
 
             temp = self.nuevoTemp()
 
@@ -300,7 +326,7 @@ class CodigoIntermedio(compilerVisitor):
         # x = expresión
         else:
 
-            variable = ctx.ID().getText()
+            variable = self.buscarVariable(ctx.ID().getText())
 
             valor = self.visit(ctx.opal())
 
@@ -386,9 +412,14 @@ class CodigoIntermedio(compilerVisitor):
     # BLOQUE
     # ==========================================
 
-    def visitBloque(self, ctx: compilerParser.BloqueContext):
+    def visitBloque(self, ctx):
+        self.abrirContexto()
 
-        return self.visitChildren(ctx)
+        self.visitChildren(ctx)
+
+        self.cerrarContexto()
+
+        return None
     # ==========================================
     # RETURN
     # ==========================================
@@ -472,7 +503,7 @@ class CodigoIntermedio(compilerVisitor):
         # ++i
         if primer_hijo == "++":
 
-            variable = ctx.ID().getText()
+            variable = self.buscarVariable(ctx.ID().getText())
 
             temp = self.nuevoTemp()
 
@@ -482,7 +513,7 @@ class CodigoIntermedio(compilerVisitor):
         # --i
         elif primer_hijo == "--":
 
-            variable = ctx.ID().getText()
+            variable = self.buscarVariable(ctx.ID().getText())
 
             temp = self.nuevoTemp()
 
@@ -492,7 +523,7 @@ class CodigoIntermedio(compilerVisitor):
         # i++
         elif ctx.INCREMENTO():
 
-            variable = ctx.ID().getText()
+            variable = self.buscarVariable(ctx.ID().getText())
 
             temp = self.nuevoTemp()
 
@@ -502,7 +533,7 @@ class CodigoIntermedio(compilerVisitor):
         # i--
         elif ctx.DECREMENTO():
 
-            variable = ctx.ID().getText()
+            variable = self.buscarVariable(ctx.ID().getText())
 
             temp = self.nuevoTemp()
 
@@ -512,7 +543,7 @@ class CodigoIntermedio(compilerVisitor):
         # i = expresion
         else:
 
-            variable = ctx.ID().getText()
+            variable = self.buscarVariable(ctx.ID().getText())
 
             valor = self.visit(ctx.opal())
 
@@ -539,7 +570,7 @@ class CodigoIntermedio(compilerVisitor):
         if ctx.getChildCount() == 0:
             return None
 
-        variable = ctx.ID().getText()
+        variable = self.declararVariable(ctx.ID().getText())
 
         if ctx.inic().getChildCount() > 0:
 

@@ -68,6 +68,7 @@ class TS:
 
     def __init__(self):
         self.contextos = [Contexto()]
+        self.contextos_cerrados = []
 
     @staticmethod
     def getInstance():
@@ -80,7 +81,10 @@ class TS:
 
     def delContexto(self):
         if len(self.contextos) > 1:
-            self.contextos.pop()
+            contexto = self.contextos.pop()
+            self.contextos_cerrados.append(contexto)
+    def todosLosContextos(self):
+       return self.contextos + self.contextos_cerrados
 
     def addSimbolo(self, id):
         # Verifica si ya existe en el contexto ACTUAL -> doble declaración
@@ -101,7 +105,7 @@ class TS:
 
     def __str__(self):
         resultado = "\nTabla de Simbolos:\n"
-        for i, contexto in enumerate(self.contextos):
+        for i, contexto in enumerate(self.todosLosContextos()):
             resultado += f"--- Contexto {i} ---\n"
             resultado += str(contexto)
         return resultado

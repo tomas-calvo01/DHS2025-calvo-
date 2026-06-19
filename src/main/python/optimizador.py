@@ -26,55 +26,90 @@ class Optimizador:
 
         return self.codigo
 
-    # ==========================================
-    # 1) PROPAGACIÓN DE CONSTANTES
-    # ==========================================
+        # ==========================================
+        # 1) PROPAGACIÓN DE CONSTANTES
+        # ==========================================
 
     def propagacion_constantes(self, codigo):
-        # Recolectar constantes Y copias simples (var = var/temporal)
+
         valores = {}
-        for linea in codigo:
-            linea_strip = linea.strip()
-            # var = numero  O  var = otraVar/temporal
-            m = re.match(r'^([A-Za-z_]\w*)\s*=\s*([A-Za-z_]\w*|-?\d+\.?\d*)$', linea_strip)
-            if m:
-                var = m.group(1)
-                val = m.group(2)
-                valores[var] = val
-
-        if not valores:
-            return codigo, False
-
-        cambio = False
         resultado = []
-        instrucciones_control = ('if', 'goto', 'FUNC', 'END', 'param', 'pop', 'return', 'DECLARE')
+        cambio = False
+
+        instrucciones_control = (
+            'if', 'goto', 'FUNC', 'END',
+            'param', 'pop', 'return', 'DECLARE'
+        )
 
         for linea in codigo:
+
             linea_strip = linea.strip()
 
+            # No tocar instrucciones de control
             if any(linea_strip.startswith(k) for k in instrucciones_control):
                 resultado.append(linea)
+                 # Después de un salto ya no sabemos las constantes
+                if linea_strip.startswith("if") or linea_strip.startswith("goto"):
+                    valores.clear()
+
                 continue
+
+            # No tocar etiquetas
             if linea_strip.endswith(':'):
                 resultado.append(linea)
+                 # Comienza una nueva región de código
+                valores.clear()
+
                 continue
 
+            # Asignaciones
             if '=' in linea_strip:
-                partes = linea_strip.split('=', 1)
-                lado_izq = partes[0].strip()
-                lado_der = partes[1].strip()
 
+                lado_izq, lado_der = map(str.strip, linea_strip.split('=', 1))
+
+                # Reemplazar usando las constantes conocidas hasta aquí
                 nuevo_der = lado_der
+
                 for var, val in valores.items():
-                    nuevo_der = re.sub(rf'\b{re.escape(var)}\b', val, nuevo_der)
+                    nuevo_der = re.sub(
+                        rf'\b{re.escape(var)}\b',
+                        val,
+                        nuevo_der
+                    )
+                # Constant Folding
+                try:
+                    if re.fullmatch(r'[-+*/(). 0-9]+', nuevo_der):
+                        nuevo_der = str(eval(nuevo_der))
+                except:
+                    pass
 
                 if nuevo_der != lado_der:
-                    nueva_linea = f"{lado_izq} = {nuevo_der}"
-                    self.reporte.append(f"Propagación: {linea_strip} → {nueva_linea}")
-                    resultado.append(nueva_linea)
                     cambio = True
+                    self.reporte.append(
+                        f"Propagación: {linea_strip} → {lado_izq} = {nuevo_der}"
+                    )
+
+                resultado.append(f"{lado_izq} = {nuevo_der}")
+
+               # Actualizar tabla de constantes
+
+                # Si quedó un número
+                if re.fullmatch(r'-?\d+(\.\d+)?', nuevo_der):
+                    valores[lado_izq] = nuevo_der
+
+                # Si quedó una variable o temporal
+                elif re.fullmatch(r'[A-Za-z_]\w*', nuevo_der):
+
+                    # Si conocemos el valor de esa variable, copiar el valor
+                    if nuevo_der in valores:
+                        valores[lado_izq] = valores[nuevo_der]
+                    else:
+                        valores[lado_izq] = nuevo_der
+
+                # Si es una expresión más compleja, dejar de considerarla constante
                 else:
-                    resultado.append(linea)
+                    valores.pop(lado_izq, None)
+
             else:
                 resultado.append(linea)
 
