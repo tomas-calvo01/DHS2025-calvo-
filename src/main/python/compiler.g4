@@ -30,6 +30,10 @@ NEQUAL  : '!=' ;
 MENOR   : '<' ;
 MAYOR   : '>' ;
 
+// ─── Operadores lógicos ───────────────────────────────────────────────────────
+AND : '&&' ;
+OR  : '||' ;
+
 // ─── Operadores de incremento/decremento ──────────────────────────────────────
 INCREMENTO : '++' ;
 DECREMENTO : '--' ;
@@ -162,7 +166,21 @@ returnstmt : RETURN opal PYC ;
 llamada : call PYC ;
 
 // ─── Expresiones ─────────────────────────────────────────────────────────────
-opal : relacion ;
+opal : disyuncion ;
+
+disyuncion : conjuncion dis ;
+
+dis
+    : OR conjuncion dis
+    |
+    ;
+
+conjuncion : relacion con ;
+
+con
+    : AND relacion con
+    |
+    ;
 
 relacion : exp l ;
 
@@ -195,7 +213,8 @@ l
 
 // ─── Factor / llamada ─────────────────────────────────────────────────────────
 factor
-    : PA exp PC
+    : PA opal PC
+    | RESTA factor
     | NUMERO
     | DECIMAL
     | call

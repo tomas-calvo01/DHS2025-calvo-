@@ -215,6 +215,42 @@ class compilerListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by compilerParser#disyuncion.
+    def enterDisyuncion(self, ctx:compilerParser.DisyuncionContext):
+        pass
+
+    # Exit a parse tree produced by compilerParser#disyuncion.
+    def exitDisyuncion(self, ctx:compilerParser.DisyuncionContext):
+        pass
+
+
+    # Enter a parse tree produced by compilerParser#dis.
+    def enterDis(self, ctx:compilerParser.DisContext):
+        pass
+
+    # Exit a parse tree produced by compilerParser#dis.
+    def exitDis(self, ctx:compilerParser.DisContext):
+        pass
+
+
+    # Enter a parse tree produced by compilerParser#conjuncion.
+    def enterConjuncion(self, ctx:compilerParser.ConjuncionContext):
+        pass
+
+    # Exit a parse tree produced by compilerParser#conjuncion.
+    def exitConjuncion(self, ctx:compilerParser.ConjuncionContext):
+        pass
+
+
+    # Enter a parse tree produced by compilerParser#con.
+    def enterCon(self, ctx:compilerParser.ConContext):
+        pass
+
+    # Exit a parse tree produced by compilerParser#con.
+    def exitCon(self, ctx:compilerParser.ConContext):
+        pass
+
+
     # Enter a parse tree produced by compilerParser#relacion.
     def enterRelacion(self, ctx:compilerParser.RelacionContext):
         pass

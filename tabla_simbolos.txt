@@ -2,17 +2,5 @@
 Tabla de Simbolos:
 --- Contexto 0 ---
   x: int
-  y: int
-  sumar: int
-  multiplicar: int
-  z: int
-  w: int
 --- Contexto 1 ---
-  a: int
-  b: int
---- Contexto 2 ---
-  a: int
-  b: int
---- Contexto 3 ---
-  x: int
-  resultado: int
+  (vacío)

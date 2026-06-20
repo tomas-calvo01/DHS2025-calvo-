@@ -77,7 +77,45 @@ class CodigoIntermedio(compilerVisitor):
     # ==========================================
 
     def visitOpal(self, ctx: compilerParser.OpalContext):
-        return self.visit(ctx.relacion())
+        return self.visit(ctx.disyuncion())
+    
+    # ==========================================
+    # DISYUNCION (||)
+    # ==========================================
+    def visitDisyuncion(self, ctx: compilerParser.DisyuncionContext):
+        izquierda = self.visit(ctx.conjuncion())
+        if ctx.dis():
+            return self.visitDis_aux(ctx.dis(), izquierda)
+        return izquierda
+
+    def visitDis_aux(self, ctx, izquierda):
+        if ctx.getChildCount() == 0:
+            return izquierda
+        derecha = self.visit(ctx.conjuncion())
+        temp = self.nuevoTemp()
+        self.emitir(f"{temp} = {izquierda} || {derecha}")
+        if ctx.dis():
+            return self.visitDis_aux(ctx.dis(), temp)
+        return temp
+
+    # ==========================================
+    # CONJUNCION (&&)
+    # ==========================================
+    def visitConjuncion(self, ctx: compilerParser.ConjuncionContext):
+        izquierda = self.visit(ctx.relacion())
+        if ctx.con():
+            return self.visitCon_aux(ctx.con(), izquierda)
+        return izquierda
+
+    def visitCon_aux(self, ctx, izquierda):
+        if ctx.getChildCount() == 0:
+            return izquierda
+        derecha = self.visit(ctx.relacion())
+        temp = self.nuevoTemp()
+        self.emitir(f"{temp} = {izquierda} && {derecha}")
+        if ctx.con():
+            return self.visitCon_aux(ctx.con(), temp)
+        return temp
 
     # ==========================================
     # RELACION
@@ -191,8 +229,9 @@ class CodigoIntermedio(compilerVisitor):
         if ctx.call():
             return self.visit(ctx.call())
 
-        if ctx.exp():
-            return self.visit(ctx.exp())
+        # DESPUÉS
+        if ctx.opal():
+            return self.visit(ctx.opal())
 
         return None
 
@@ -232,7 +271,33 @@ class CodigoIntermedio(compilerVisitor):
                 self.emitir(f"param {valor}")
 
         return args
-        # ==========================================
+    
+    def visitFactor(self, ctx: compilerParser.FactorContext):
+        # negación unaria: -factor
+        if ctx.RESTA():
+            operando = self.visit(ctx.factor())
+            temp = self.nuevoTemp()
+            self.emitir(f"{temp} = -1 * {operando}")
+            return temp
+
+        if ctx.NUMERO():
+            return ctx.NUMERO().getText()
+
+        if ctx.DECIMAL():
+            return ctx.DECIMAL().getText()
+
+        if ctx.ID():
+            nombre = ctx.ID().getText()
+            return self.buscarVariable(nombre)
+
+        if ctx.call():
+            return self.visit(ctx.call())
+
+        if ctx.opal():
+            return self.visit(ctx.opal())
+
+        return None
+    # ==========================================
     # DECLARACION
     # ==========================================
 

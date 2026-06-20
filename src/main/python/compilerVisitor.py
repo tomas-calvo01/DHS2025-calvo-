@@ -124,6 +124,26 @@ class compilerVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by compilerParser#disyuncion.
+    def visitDisyuncion(self, ctx:compilerParser.DisyuncionContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by compilerParser#dis.
+    def visitDis(self, ctx:compilerParser.DisContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by compilerParser#conjuncion.
+    def visitConjuncion(self, ctx:compilerParser.ConjuncionContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by compilerParser#con.
+    def visitCon(self, ctx:compilerParser.ConContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by compilerParser#relacion.
     def visitRelacion(self, ctx:compilerParser.RelacionContext):
         return self.visitChildren(ctx)
