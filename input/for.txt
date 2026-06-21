@@ -1,9 +1,5 @@
-#include <stdio.h>
-
-int main () {
-    int x, a, z;
-
-    for(x = 0, a = 1, z = 2; x < 5; ++x, a = a * z, printf("%d\n", a));
-
-    return 0;
+int resultado = 1;
+int n = 5;
+for (int i = 1; i <= n; i++) {
+    resultado = resultado * i;
 }

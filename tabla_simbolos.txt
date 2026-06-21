@@ -2,5 +2,6 @@
 Tabla de Simbolos:
 --- Contexto 0 ---
   x: int
---- Contexto 1 ---
-  (vacío)
+  y: int
+  z: int
+  w: int

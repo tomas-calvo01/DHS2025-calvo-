@@ -1,0 +1,13 @@
+int x = 15;
+int y = 3;
+int z = 0;
+int resultado = 0;
+if ((x > 10) && (y < 5)) {
+    resultado = 1;
+}
+if ((x == 0) || (z == 0)) {
+    resultado = 2;
+}
+if ((x > 10) && (y < 5) || (z == 0)) {
+    resultado = 3;
+}

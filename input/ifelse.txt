@@ -1,0 +1,12 @@
+int x = 15;
+int y = 8;
+int mayor = 0;
+if (x > y) {
+    mayor = x;
+} else {
+    if (y > x) {
+        mayor = y;
+    } else {
+        mayor = 0;
+    }
+}
