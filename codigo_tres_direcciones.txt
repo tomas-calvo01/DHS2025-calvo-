@@ -1,7 +1,12 @@
-x_0 = 5
-t0 = -5
-y_0 = -5
-t1 = -10
-z_0 = -10
-t2 = -15
-w_0 = -15
+resultado_0 = 1
+n_0 = 5
+i_1 = 1
+L0:
+t0 = i_1 <= n_0
+if not t0 goto L1
+t1 = resultado_0 * i_1
+resultado_0 = t1
+t2 = i_1 + 1
+i_1 = t2
+goto L0
+L1:

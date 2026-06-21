@@ -302,7 +302,7 @@ class CodigoIntermedio(compilerVisitor):
     # ==========================================
 
     def visitDeclaracion(self, ctx: compilerParser.DeclaracionContext):
-
+        
         variable = self.declararVariable(ctx.ID().getText())
 
         if ctx.inic().getChildCount() > 0:
@@ -535,6 +535,9 @@ class CodigoIntermedio(compilerVisitor):
         inicio = self.nuevaEtiqueta()
         fin = self.nuevaEtiqueta()
 
+        # Abrir contexto ANTES del forInit para que i reciba sufijo _1
+        self.abrirContexto()
+        
         # inicialización
         self.visit(ctx.forInit())
 
@@ -545,8 +548,10 @@ class CodigoIntermedio(compilerVisitor):
 
         self.emitir(f"if not {condicion} goto {fin}")
 
-        # cuerpo del for
-        self.visit(ctx.bloque())
+       # visitar solo las instrucciones del bloque, no el bloque entero
+        for child in ctx.bloque().getChildren():
+            if hasattr(child, 'getRuleIndex'):
+                self.visit(child)
 
         # incremento
         self.visit(ctx.asignacionFor())
@@ -555,15 +560,29 @@ class CodigoIntermedio(compilerVisitor):
 
         self.emitir(f"{fin}:")
 
+        # Cerrar el contexto del for
+        self.cerrarContexto()
+
         return None
     # ==========================================
     # FORINIT
     # ==========================================
 
     def visitForInit(self, ctx: compilerParser.ForInitContext):
-
-        self.visitChildren(ctx)
-
+        # Si es declaración (int i = 0)
+        if ctx.tipo():
+            variable = self.declararVariable(ctx.ID().getText())
+            if ctx.inic() and ctx.inic().getChildCount() > 0:
+                valor = self.visit(ctx.inic().opal())
+                self.emitir(f"{variable} = {valor}")
+            else:
+                self.emitir(f"DECLARE {variable}")
+            # visitar listaVarFor si existe
+            if ctx.listaVarFor():
+                self.visit(ctx.listaVarFor())
+        else:
+            # Es asignación (i = 0)
+            self.visitChildren(ctx)
         return None
     # ==========================================
     # ASIGNACION FOR

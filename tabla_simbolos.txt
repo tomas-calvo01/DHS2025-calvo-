@@ -1,7 +1,7 @@
 
 Tabla de Simbolos:
 --- Contexto 0 ---
-  x: int
-  y: int
-  z: int
-  w: int
+  resultado: int
+  n: int
+--- Contexto 1 ---
+  i: int
