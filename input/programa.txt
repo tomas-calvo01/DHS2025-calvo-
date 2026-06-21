@@ -1,5 +1,4 @@
-int resultado = 1;
-int n = 5;
-for (int i = 1; i <= n; i++) {
-    resultado = resultado * i;
+int sumar(int a, int b) {
+    return a + b;
 }
+int resultado = sumar(5);
