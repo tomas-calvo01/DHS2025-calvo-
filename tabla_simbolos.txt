@@ -1,7 +1,19 @@
 
 Tabla de Simbolos:
 --- Contexto 0 ---
-  resultado: int
-  n: int
---- Contexto 1 ---
+  maximo: int
+  x: int
+  y: int
+  limite: int
+  acum: int
   i: int
+  m: int
+  final: int
+--- Contexto 1 ---
+  (vacío)
+--- Contexto 2 ---
+  a: int
+  b: int
+  resultado: int
+--- Contexto 3 ---
+  (vacío)

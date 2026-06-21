@@ -132,18 +132,21 @@ class Optimizador:
                 temp = m.group(1)
                 expr = m.group(2).strip()
 
-                # Las llamadas a función NUNCA son subexpresiones repetidas
-                # porque los argumentos (param) pueden ser distintos
                 if 'call' in expr:
-                    expresiones_vistas[temp] = expr  # la registramos pero no la reemplazamos
+                    expresiones_vistas[temp] = expr
                     resultado.append(linea)
                 elif expr in expresiones_vistas:
                     temp_anterior = expresiones_vistas[expr]
-                    nueva_linea = f"{temp} = {temp_anterior}"
+                    # En vez de emitir t1 = t0, reemplazamos t1 por t0
+                    # en todas las líneas ya emitidas y marcamos cambio
+                    resultado = [
+                        re.sub(rf'\b{re.escape(temp)}\b', temp_anterior, l)
+                        for l in resultado
+                    ]
+                    # No agregamos esta línea — la eliminamos
                     self.reporte.append(
-                        f"Eliminación de repetidas: {linea_strip} → {nueva_linea}"
+                        f"Eliminación de repetidas: {linea_strip} → eliminada, usos reemplazados por {temp_anterior}"
                     )
-                    resultado.append(nueva_linea)
                     cambio = True
                 else:
                     expresiones_vistas[expr] = temp
