@@ -24,6 +24,11 @@ class Optimizador:
                 self.codigo = nuevo
                 cambio = True
 
+            nuevo, c3 = self.eliminacion_codigo_muerto(self.codigo)  # ← nueva
+            if c3:
+                self.codigo = nuevo
+                cambio = True
+
         return self.codigo
 
         # ==========================================
@@ -137,8 +142,6 @@ class Optimizador:
                     resultado.append(linea)
                 elif expr in expresiones_vistas:
                     temp_anterior = expresiones_vistas[expr]
-                    # En vez de emitir t1 = t0, reemplazamos t1 por t0
-                    # en todas las líneas ya emitidas y marcamos cambio
                     resultado = [
                         re.sub(rf'\b{re.escape(temp)}\b', temp_anterior, l)
                         for l in resultado
@@ -153,6 +156,44 @@ class Optimizador:
                     resultado.append(linea)
             else:
                 resultado.append(linea)
+
+        return resultado, cambio
+    
+    # ==========================================
+    # 3) ELIMINACIÓN DE CÓDIGO MUERTO
+    # ==========================================
+    def eliminacion_codigo_muerto(self, codigo):
+        cambio = False
+        resultado = []
+
+        # Recolectar todos los temporales que se usan en lado derecho
+        usos = set()
+        for linea in codigo:
+            linea_strip = linea.strip()
+            if '=' in linea_strip:
+                _, lado_der = linea_strip.split('=', 1)
+                temporales = re.findall(r'\bt\d+\b', lado_der)
+                for t in temporales:
+                    usos.add(t)
+            else:
+                # instrucciones como return t0, param t0, if not t0 goto L
+                temporales = re.findall(r'\bt\d+\b', linea_strip)
+                for t in temporales:
+                    usos.add(t)
+
+        # Eliminar líneas donde un temporal se asigna pero nunca se usa
+        for linea in codigo:
+            linea_strip = linea.strip()
+            m = re.match(r'^(t\d+)\s*=\s*(.+)$', linea_strip)
+            if m:
+                temp = m.group(1)
+                if temp not in usos:
+                    self.reporte.append(
+                        f"Código muerto eliminado: {linea_strip}"
+                    )
+                    cambio = True
+                    continue
+            resultado.append(linea)
 
         return resultado, cambio
 

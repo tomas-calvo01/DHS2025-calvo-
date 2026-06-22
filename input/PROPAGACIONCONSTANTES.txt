@@ -1,0 +1,6 @@
+int x = 5;
+int y = 10;
+int z = x + y;
+int w=0;
+w = z * 2;
+int q= (x*10 + z)/5;
