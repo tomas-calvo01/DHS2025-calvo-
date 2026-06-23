@@ -381,15 +381,30 @@ class Escucha(compilerListener, ErrorListener):
     def enterFuncion(self, ctx: compilerParser.FuncionContext):
         print("  " * self.indent + "FUNCION ENTER")
         self.indent += 1
- 
+
         tipo = ctx.tipo().getText()
         nombre = ctx.ID().getText()
- 
-        if self.ts.buscarSimboloContexto(nombre):
-            self.reportar_error_semantico(
-                ctx.start.line,
-                f"Función '{nombre}' ya declarada en este contexto."
-            )
+        es_prototipo = ctx.bloque() is None  # termina en ';', sin cuerpo
+
+        existente = self.ts.buscarSimboloContexto(nombre)
+
+        if existente:
+            # Ya hay algo con este nombre en este contexto. Si es una
+            # Funcion que todavía no tiene cuerpo (era un prototipo),
+            # esto es la definición real que lo completa: NO es error.
+            if isinstance(existente, Funcion) and not existente.getTieneCuerpo():
+                if not es_prototipo:
+                    existente.setTieneCuerpo()
+                    existente.setLinea(ctx.start.line)
+                    print(f"[INFO] Función '{nombre}' completada con su definición (antes era solo prototipo).")
+                else:
+                    print(f"[INFO] Prototipo de función '{nombre}' repetido, se ignora.")
+            else:
+                # Ya existía completa (con cuerpo) o no es una Funcion: doble declaración real.
+                self.reportar_error_semantico(
+                    ctx.start.line,
+                    f"Función '{nombre}' ya declarada en este contexto."
+                )
         else:
             # Armar lista de parámetros ANTES de crear la Funcion
             parametros = []
@@ -400,17 +415,19 @@ class Escucha(compilerListener, ErrorListener):
                 while lista and lista.getChildCount() > 0:
                     parametros.append((lista.tipo().getText(), lista.ID().getText()))
                     lista = lista.lista_param()
- 
+
             # Crear la función con los parámetros reales
             fun = Funcion(nombre, tipo, parametros)
             fun.setLinea(ctx.start.line)
             fun.setInicializado(ctx.start.line)
+            if not es_prototipo:
+                fun.setTieneCuerpo()
             self.ts.addSimbolo(fun)
-            print(f"[INFO] Función '{nombre}' tipo {tipo} definida con {len(parametros)} parámetro(s).")
- 
+            print(f"[INFO] Función '{nombre}' tipo {tipo} {'(prototipo) ' if es_prototipo else ''}definida con {len(parametros)} parámetro(s).")
+
         # Abrir scope hijo para el cuerpo de la función
         self.ts.addContexto()
- 
+
         # Registrar parámetros en el scope hijo como variables
         if ctx.parametros() and ctx.parametros().getChildCount() > 0:
             params = ctx.parametros()
@@ -421,7 +438,7 @@ class Escucha(compilerListener, ErrorListener):
             var.setInicializado(ctx.start.line)
             self.ts.addSimbolo(var)
             print(f"[INFO] Parámetro '{nombre_param}' tipo {tipo_param} registrado.")
- 
+
             lista = params.lista_param()
             while lista and lista.getChildCount() > 0:
                 tipo_param = lista.tipo().getText()
@@ -432,7 +449,7 @@ class Escucha(compilerListener, ErrorListener):
                 self.ts.addSimbolo(var)
                 print(f"[INFO] Parámetro '{nombre_param}' tipo {tipo_param} registrado.")
                 lista = lista.lista_param()
- 
+    
     def exitFuncion(self, ctx: compilerParser.FuncionContext):
         self.indent -= 1
         nombre = ctx.ID().getText() if ctx.ID() else "?"
@@ -443,8 +460,6 @@ class Escucha(compilerListener, ErrorListener):
     # ===================== RETURN =====================
  
     def exitReturnstmt(self, ctx: compilerParser.ReturnstmtContext):
-        # return opal ;  -> hay un valor en la pila, se descarta acá
-        # return ;       -> no hay nada que sacar
         if ctx.opal() is not None:
             self._pop_tipo()
  
@@ -575,8 +590,6 @@ class Escucha(compilerListener, ErrorListener):
     # ===================== ASIGNACION FOR (incremento del for) ======
  
     def exitAsignacionFor(self, ctx: compilerParser.AsignacionForContext):
-        # ID ASIG opal   -> hay valor en la pila, validar y sacar
-        # ID++ / ID-- / ++ID / --ID -> no pasan por opal, nada que sacar
         if ctx.opal() is None:
             return
  
