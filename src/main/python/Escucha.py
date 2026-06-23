@@ -180,9 +180,7 @@ class Escucha(compilerListener, ErrorListener):
     # ===================== DECLARACIÓN =====================
  
     def enterDeclaracion(self, ctx: compilerParser.DeclaracionContext):
-        # Guardamos el tipo de ESTA declaración para que listavar (las
-        # variables que vienen después de la coma: "int x, y, z;") lo
-        # pueda usar sin tener que trepar el árbol con parentCtx.
+        
         self.tipo_actual = ctx.tipo().getText()
  
     def exitDeclaracion(self, ctx: compilerParser.DeclaracionContext):
@@ -191,9 +189,6 @@ class Escucha(compilerListener, ErrorListener):
  
         tiene_init = ctx.inic().getChildCount() > 0
  
-        # Si hubo "= opal", su tipo ya está en la pila: SIEMPRE hay que
-        # sacarlo (haya o no error de doble declaración más abajo) para
-        # no desbalancear la pila para las instrucciones siguientes.
         tipo_valor = self._pop_tipo() if tiene_init else None
  
         if self.ts.buscarSimboloContexto(nombre):
@@ -261,9 +256,6 @@ class Escucha(compilerListener, ErrorListener):
         nombre = ctx.ID().getText()
         simbolo = self.ts.buscarSimbolo(nombre)
  
-        # ID ASIG opal -> hay un valor en la pila que viene de 'opal'.
-        # ID++ / ID-- / ++ID / --ID -> no pasan por 'opal', no hay nada
-        # que sacar de la pila.
         tipo_valor = None
         if ctx.opal() is not None:
             tipo_valor = self._pop_tipo()
@@ -288,18 +280,6 @@ class Escucha(compilerListener, ErrorListener):
         print(f"[INFO] Asignación correcta: variable '{nombre}' marcada como usada e inicializada.")
  
     # ===================== EXPRESIONES: FACTOR =====================
-    #
-    # Esta es la pieza que el profesor señaló: antes, en exitAsignacion,
-    # se llamaba a ctx.opal().getText() y se reparseaba el string a mano
-    # con .replace() e isdigit(). Eso no usa el árbol de ANTLR para nada;
-    # es indistinguible de tomar el código fuente y analizarlo con
-    # expresiones regulares por afuera del compilador.
-    #
-    # Ahora cada NODO HOJA de una expresión (un número, un decimal, un
-    # ID, una llamada) empuja su tipo a la pila en el momento en que se
-    # lo visita. El tipo de cualquier expresión completa termina
-    # disponible en la pila exactamente cuando el nodo que la contiene
-    # (asignación, declaración, return, argumento...) la necesita.
  
     def exitFactor(self, ctx: compilerParser.FactorContext):
  
@@ -312,8 +292,7 @@ class Escucha(compilerListener, ErrorListener):
             return
  
         if ctx.call():
-            # exitCall ya empujó el tipo de retorno de la función.
-            # Este factor no agrega ni saca nada, solo "pasa" el valor.
+          
             return
  
         if ctx.ID():
@@ -346,10 +325,7 @@ class Escucha(compilerListener, ErrorListener):
             self.pila_tipos.append(simbolo.getTipoDato())
             return
  
-        # PA opal PC   -> el tipo ya está en la pila (lo dejó 'opal')
-        # RESTA factor -> el tipo ya está en la pila (lo dejó el factor interno)
-        # En ambos casos no hay que tocar la pila.
- 
+      
     # ===================== EXPRESIONES: TERM / EXP (aritmética) =====
  
     def exitT(self, ctx: compilerParser.TContext):
@@ -368,8 +344,7 @@ class Escucha(compilerListener, ErrorListener):
         izq = self._pop_tipo()
         self.pila_tipos.append(self.combinar_aritmetico(izq, der))
  
-    # term y exp no necesitan exit propio: el valor que dejan sus hijos
-    # (factor+t, o term+e) ya queda como el único valor en la pila.
+
  
     # ===================== EXPRESIONES: RELACION / LOGICOS ==========
  
@@ -400,8 +375,6 @@ class Escucha(compilerListener, ErrorListener):
         izq = self._pop_tipo()
         self.pila_tipos.append("int")
  
-    # conjuncion, disyuncion y opal no necesitan exit propio: son pura
-    # delegación, el valor que dejan sus hijos ya es el valor final.
  
     # ===================== FUNCIÓN =====================
  
@@ -478,9 +451,6 @@ class Escucha(compilerListener, ErrorListener):
     # ===================== LLAMADA COMO INSTRUCCIÓN =====================
  
     def exitLlamada(self, ctx: compilerParser.LlamadaContext):
-        # 'call' ya empujó el tipo de retorno. Como acá se usa como
-        # instrucción suelta (sin asignar el resultado a nada), hay que
-        # descartarlo para no dejar la pila desbalanceada.
         self._pop_tipo()
  
     # ===================== CALL =====================
@@ -493,9 +463,6 @@ class Escucha(compilerListener, ErrorListener):
         if ctx.argumentos() is not None:
             n_args = len(ctx.argumentos().opal())
  
-        # Cada argumento (cada 'opal' de argumentos) ya dejó su tipo en
-        # la pila, en orden. Los sacamos todos (síempre, haya o no
-        # error) y los volvemos a poner en el orden original.
         tipos_args = [self._pop_tipo() for _ in range(n_args)]
         tipos_args.reverse()
  
@@ -525,17 +492,13 @@ class Escucha(compilerListener, ErrorListener):
                         f"pero se pasó '{tipo_arg}'."
                     )
  
-        # El resultado de la llamada es el tipo de retorno de la función;
-        # queda en la pila para quien lo use (un factor, una asignación...).
         self.pila_tipos.append(simbolo.getTipoDato())
         print(f"[INFO] Llamada a función '{nombre}' procesada.")
  
     # ===================== FOR INIT =====================
  
     def enterForInit(self, ctx: compilerParser.ForInitContext):
-        # Igual que enterDeclaracion: si esta forma de forInit es una
-        # declaración ("int i = 0, j = 0"), guardamos el tipo ANTES de
-        # bajar a listaVarFor, que lo va a necesitar en su propio exit.
+      
         if ctx.tipo():
             self.tipo_actual = ctx.tipo().getText()
  
@@ -571,8 +534,7 @@ class Escucha(compilerListener, ErrorListener):
             self.ts.addSimbolo(var)
             print(f"[INFO] Declarada variable '{nombre}' tipo {tipo} en for, inicializada: {var.getInicializado()}")
  
-        # Si es 'listaAsignacionFor' (for (i=0; ...)), cada asignacionFor
-        # ya se valida sola en exitAsignacionFor; no hace falta nada más aquí.
+       
  
     # ===================== LISTA VAR FOR =====================
  
