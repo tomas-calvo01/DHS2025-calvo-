@@ -42,9 +42,16 @@ class Funcion(ID):
     def __init__(self, nombre, tipoDato, args=None):
         super().__init__(nombre, tipoDato)
         self.args = args if args else []
+        self.tiene_cuerpo = False        
 
     def getListaArgs(self):
         return self.args
+
+    def setTieneCuerpo(self):          
+        self.tiene_cuerpo = True
+
+    def getTieneCuerpo(self):            
+        return self.tiene_cuerpo
 
 
 class Contexto:

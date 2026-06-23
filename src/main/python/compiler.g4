@@ -147,7 +147,10 @@ asignacion
     ;
 
 // ─── Funciones ────────────────────────────────────────────────────────────────
-funcion : tipo ID PA parametros PC bloque ;
+funcion
+    : tipo ID PA parametros PC bloque
+    | tipo ID PA parametros PC PYC
+    ;
 
 parametros
     : tipo ID lista_param
@@ -160,7 +163,10 @@ lista_param
     ;
 
 // ─── Return ───────────────────────────────────────────────────────────────────
-returnstmt : RETURN opal PYC ;
+returnstmt
+    : RETURN opal PYC
+    | RETURN PYC
+    ;
 
 // ─── Llamada a función como instrucción ───────────────────────────────────────
 llamada : call PYC ;
@@ -182,12 +188,20 @@ con
     |
     ;
 
-relacion : exp l ;
+relacion
+    : exp
+    | exp MENOR exp
+    | exp MAYOR exp
+    | exp MENOREQ exp
+    | exp MAYOREQ exp
+    | exp EQUAL exp
+    | exp NEQUAL exp
+    ;
 
 exp : term e ;
 
 e
-    : SUMA  term e
+    : SUMA term e
     | RESTA term e
     |
     ;
@@ -196,18 +210,8 @@ term : factor t ;
 
 t
     : MULT factor t
-    | DIV  factor t
-    | MOD  factor t
-    |
-    ;
-
-l
-    : MENOR   exp l
-    | MAYOR   exp l
-    | MENOREQ exp l
-    | MAYOREQ exp l
-    | EQUAL   exp l
-    | NEQUAL  exp l
+    | DIV factor t
+    | MOD factor t
     |
     ;
 

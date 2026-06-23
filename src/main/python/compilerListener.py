@@ -296,15 +296,6 @@ class compilerListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by compilerParser#l.
-    def enterL(self, ctx:compilerParser.LContext):
-        pass
-
-    # Exit a parse tree produced by compilerParser#l.
-    def exitL(self, ctx:compilerParser.LContext):
-        pass
-
-
     # Enter a parse tree produced by compilerParser#factor.
     def enterFactor(self, ctx:compilerParser.FactorContext):
         pass

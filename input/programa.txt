@@ -1,7 +1,14 @@
+int suma(int a, int b, int c){
+    int x1= (-b + (b*b-4*a*c))/(2*a);
+    return x1;
+    
+}
 int b=1;
 int a=2; 
 int c=3;
-int x1= (-b + (b*b-4*a*c))/(2*a);
+int x1= suma(a,b,c);
 int j=a*3;
 int h=c*2;
 int d=j+h;
+
+

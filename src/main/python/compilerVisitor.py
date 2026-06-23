@@ -169,11 +169,6 @@ class compilerVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by compilerParser#l.
-    def visitL(self, ctx:compilerParser.LContext):
-        return self.visitChildren(ctx)
-
-
     # Visit a parse tree produced by compilerParser#factor.
     def visitFactor(self, ctx:compilerParser.FactorContext):
         return self.visitChildren(ctx)

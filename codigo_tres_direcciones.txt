@@ -1,7 +1,26 @@
+FUNC suma:
+pop a_1
+pop b_1
+pop c_1
+t0 = -1 * b_1
+t1 = b_1 * b_1
+t2 = 4 * a_1
+t3 = t2 * c_1
+t4 = t1 - t3
+t5 = t0 + t4
+t6 = 2 * a_1
+t7 = t5 / t6
+x1_1 = t7
+return x1_1
+END FUNC suma
 b_0 = 1
 a_0 = 2
 c_0 = 3
-x1_0 = -6.0
+param a_0
+param b_0
+param c_0
+t8 = call suma
+x1_0 = t8
 j_0 = 6
 h_0 = 6
 d_0 = 12

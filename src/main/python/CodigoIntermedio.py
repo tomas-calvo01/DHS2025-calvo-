@@ -123,12 +123,36 @@ class CodigoIntermedio(compilerVisitor):
 
     def visitRelacion(self, ctx: compilerParser.RelacionContext):
 
-        izquierda = self.visit(ctx.exp())
+        exps = ctx.exp()
 
-        if ctx.l():
-            return self.visitL_aux(ctx.l(), izquierda)
+        # Sólo una expresión (sin comparación)
+        if len(exps) == 1:
+            return self.visit(exps[0])
 
-        return izquierda
+        izquierda = self.visit(exps[0])
+        derecha = self.visit(exps[1])
+
+        temp = self.nuevoTemp()
+
+        if ctx.MENOR():
+            self.emitir(f"{temp} = {izquierda} < {derecha}")
+
+        elif ctx.MAYOR():
+            self.emitir(f"{temp} = {izquierda} > {derecha}")
+
+        elif ctx.MENOREQ():
+            self.emitir(f"{temp} = {izquierda} <= {derecha}")
+
+        elif ctx.MAYOREQ():
+            self.emitir(f"{temp} = {izquierda} >= {derecha}")
+
+        elif ctx.EQUAL():
+            self.emitir(f"{temp} = {izquierda} == {derecha}")
+
+        elif ctx.NEQUAL():
+            self.emitir(f"{temp} = {izquierda} != {derecha}")
+
+        return temp
 
     def visitL_aux(self, ctx, izquierda):
 
@@ -491,6 +515,10 @@ class CodigoIntermedio(compilerVisitor):
 
     def visitReturnstmt(self, ctx: compilerParser.ReturnstmtContext):
 
+        if ctx.opal() is None:
+            self.emitir("return")
+            return None
+
         valor = self.visit(ctx.opal())
 
         self.emitir(f"return {valor}")
@@ -500,6 +528,8 @@ class CodigoIntermedio(compilerVisitor):
     # FUNCION
     # ==========================================
     def visitFuncion(self, ctx: compilerParser.FuncionContext):
+        if ctx.bloque() is None:      # <<< AGREGAR: prototipo sin cuerpo, no hay nada que generar
+             return None
         nombre = ctx.ID().getText()
         self.emitir(f"FUNC {nombre}:")
 
