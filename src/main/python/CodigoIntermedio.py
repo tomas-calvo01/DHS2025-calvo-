@@ -234,30 +234,6 @@ class CodigoIntermedio(compilerVisitor):
 
         return temp
 
-    # ==========================================
-    # FACTOR
-    # ==========================================
-
-    def visitFactor(self, ctx: compilerParser.FactorContext):
-
-        if ctx.NUMERO():
-            return ctx.NUMERO().getText()
-
-        if ctx.DECIMAL():
-            return ctx.DECIMAL().getText()
-
-        if ctx.ID():
-            nombre = ctx.ID().getText()
-            return self.buscarVariable(nombre)
-
-        if ctx.call():
-            return self.visit(ctx.call())
-
-        # DESPUÉS
-        if ctx.opal():
-            return self.visit(ctx.opal())
-
-        return None
 
     # ==========================================
     # LLAMADA A FUNCION
