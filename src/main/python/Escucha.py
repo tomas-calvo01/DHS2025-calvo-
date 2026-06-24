@@ -389,9 +389,6 @@ class Escucha(compilerListener, ErrorListener):
         existente = self.ts.buscarSimboloContexto(nombre)
 
         if existente:
-            # Ya hay algo con este nombre en este contexto. Si es una
-            # Funcion que todavía no tiene cuerpo (era un prototipo),
-            # esto es la definición real que lo completa: NO es error.
             if isinstance(existente, Funcion) and not existente.getTieneCuerpo():
                 if not es_prototipo:
                     existente.setTieneCuerpo()
